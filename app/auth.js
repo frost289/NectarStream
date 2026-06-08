@@ -1,33 +1,33 @@
 import { supabase } from '../lib/supabaseClient.js';
 
+/**
+ * Safely fetches the logged-in user's role without causing 406 coercion faults
+ */
 export async function getUserRole() {
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session || !session.user) return 'guest';
 
-    if (sessionError || !session || !session.user) {
-        console.log("Auth Status: No active user session.");
+        // Using .maybeSingle() avoids throwing a 406 error if a row doesn't exist yet
+        const { data, error } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', session.user.id)
+            .maybeSingle(); 
+
+        if (error) {
+            console.error("Database Error reading profile:", error.message);
+            return 'guest';
+        }
+
+        if (!data) {
+            console.warn(`Database Warning: No matching row found in profiles table for UID: ${session.user.id}`);
+            return 'guest';
+        }
+
+        return data.role || 'guest';
+    } catch (err) {
+        console.error("Auth System Exception:", err);
         return 'guest';
     }
-
-    const userId = session.user.id;
-    console.log("Auth Status: User logged in. UID:", userId);
-
-    // Using .maybeSingle() prevents crashes if 0 or multiple rows exist
-    const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', userId)
-        .maybeSingle();
-
-    if (profileError) {
-        console.error("Database Error reading profiles table:", profileError.message);
-        return 'user'; 
-    }
-
-    if (!profile) {
-        console.warn("Database Warning: No matching row found in profiles table for UID:", userId);
-        return 'user';
-    }
-
-    console.log("Success: Role successfully parsed ->", profile.role);
-    return profile.role;
 }

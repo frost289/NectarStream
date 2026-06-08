@@ -1,90 +1,127 @@
 import { supabase } from '../lib/supabaseClient.js';
 
-let isSignUp = false;
-
+/**
+ * Main rendering endpoint for the NectarStream Authentication interface
+ */
 export async function renderLogin() {
     const container = document.getElementById('app-container');
-    
+    if (!container) return;
+
+    // 1. Inject semantic login/signup structural markup layouts natively
     container.innerHTML = `
-        <div class="auth-container" style="max-width: 400px; margin-top: 40px;">
-            <h1 id="auth-title">${isSignUp ? 'Create Artist Account' : 'Login'}</h1>
-            <form id="auth-form" style="display: flex; flex-direction: column; gap: 15px; margin-top: 20px;">
-                <div>
-                    <label style="display:block; margin-bottom: 5px; color: #b3b3b3;">Email Address</label>
-                    <input type="email" id="email" placeholder="artist@nectarstream.com" required>
-                </div>
-                <div>
-                    <label style="display:block; margin-bottom: 5px; color: #b3b3b3;">Password</label>
-                    <input type="password" id="password" placeholder="••••••••" required>
-                </div>
-                <button type="submit" id="action-btn" style="margin-top: 10px;">
-                    ${isSignUp ? 'Sign Up as Artist' : 'Sign In'}
-                </button>
-            </form>
-            <p style="margin-top: 20px; color: #b3b3b3; font-size: 14px;">
-                ${isSignUp ? 'Already have an account?' : 'New artist looking to share music?'} 
-                <span id="toggle-auth-mode" style="color: #FF6600; cursor: pointer; font-weight: bold; margin-left: 5px;">
-                    ${isSignUp ? 'Login here' : 'Sign up here'}
-                </span>
-            </p>
+        <div class="auth-wrapper" style="display: flex; justify-content: center; align-items: center; min-height: 70vh;">
+            <div class="auth-container" style="background: #111; padding: 40px; border-radius: 8px; width: 100%; max-width: 400px; box-shadow: 0 4px 12px rgba(0,0,0,0.5);">
+                <h2 id="auth-title" style="margin-bottom: 24px; font-size: 24px; color: #fff;">Login to NectarStream</h2>
+                
+                <form id="auth-form" style="display: flex; flex-direction: column; gap: 20px;">
+                    <div class="form-group" style="display: flex; flex-direction: column; gap: 8px;">
+                        <label for="auth-email" style="color: #aaa; font-size: 14px;">Email Address</label>
+                        <input type="email" id="auth-email" required placeholder="yourname@example.com" 
+                               style="padding: 12px; background: #222; border: 1px solid #333; color: #fff; border-radius: 4px; font-size: 14px;">
+                    </div>
+                    
+                    <div class="form-group" style="display: flex; flex-direction: column; gap: 8px;">
+                        <label for="auth-password" style="color: #aaa; font-size: 14px;">Password</label>
+                        <input type="password" id="auth-password" required placeholder="••••••" 
+                               style="padding: 12px; background: #222; border: 1px solid #333; color: #fff; border-radius: 4px; font-size: 14px;">
+                    </div>
+                    
+                    <button type="submit" id="auth-submit-btn" class="btn-primary" 
+                            style="padding: 14px; background: #f50; color: #fff; border: none; border-radius: 25px; font-weight: bold; cursor: pointer; font-size: 16px; transition: background 0.2s; margin-top: 10px;">
+                        Sign In
+                    </button>
+                </form>
+                
+                <p class="auth-toggle-text" style="margin-top: 24px; text-align: center; color: #aaa; font-size: 14px;">
+                    Don't have an account? <span id="auth-toggle-link" style="color: #f50; cursor: pointer; font-weight: bold; text-decoration: none;">Register here</span>
+                </p>
+            </div>
         </div>
     `;
 
-    document.getElementById('toggle-auth-mode').onclick = () => {
-        isSignUp = !isSignUp;
-        renderLogin();
-    };
+    // 2. Element tracking handles
+    let isLoginMode = true;
+    const form = document.getElementById('auth-form');
+    const title = document.getElementById('auth-title');
+    const submitBtn = document.getElementById('auth-submit-btn');
+    const toggleLink = document.getElementById('auth-toggle-link');
 
-    document.getElementById('auth-form').onsubmit = async (e) => {
-        e.preventDefault(); 
+    // 3. Setup client-side mode toggle interface engine
+    toggleLink.addEventListener('click', () => {
+        isLoginMode = !isLoginMode;
+        if (isLoginMode) {
+            title.innerText = "Login to NectarStream";
+            submitBtn.innerText = "Sign In";
+            toggleLink.innerText = "Register here";
+            toggleLink.previousSibling.textContent = "Don't have an account? ";
+        } else {
+            title.innerText = "Create Your Account";
+            submitBtn.innerText = "Register";
+            toggleLink.innerText = "Login here";
+            toggleLink.previousSibling.textContent = "Already have an account? ";
+        }
+    });
 
-        const email = document.getElementById('email').value.trim();
-        const password = document.getElementById('password').value;
-        const actionBtn = document.getElementById('action-btn');
+    // 4. Form Processing Execution Core
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const email = document.getElementById('auth-email').value.trim();
+        const password = document.getElementById('auth-password').value;
 
-        actionBtn.innerText = "Processing...";
-        actionBtn.disabled = true;
+        // Freeze control inputs during active database asynchronous threads
+        submitBtn.disabled = true;
+        submitBtn.innerText = isLoginMode ? "Signing In..." : "Registering...";
 
         try {
-            if (isSignUp) {
-                // 1. Create user in Supabase Auth System
-                const { data: authData, error: signUpError } = await supabase.auth.signUp({ email, password });
-                if (signUpError) throw signUpError;
+            if (isLoginMode) {
+                // ==========================================================
+                // USER SIGN-IN ENGINE RUNTIME
+                // ==========================================================
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+
+                if (error) throw error;
                 
-                if (authData?.user) {
-                    console.log("Auth user created. Injecting profile row manually for UID:", authData.user.id);
-                    
-                    // 2. MANUALLY insert the profile row directly from frontend JavaScript
-                    const { error: profileError } = await supabase
-                        .from('profiles')
-                        .insert([{ id: authData.user.id, role: 'artist' }]);
-                    
-                    if (profileError) {
-                        console.error("Manual profile creation failed:", profileError.message);
-                        throw new Error("Auth passed, but profile setup failed: " + profileError.message);
-                    }
-                }
-                alert("Artist profile registered successfully!");
-            }
+                console.log(`Auth System: Session verified completely for UID: [${data.user.id}]`);
+                window.loadPage('home');
 
-            // 3. Log in to establish a fresh local session
-            const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-            if (signInError) throw signInError;
-
-            alert("Authentication successful!");
-            
-            if (window.loadPage) {
-                await window.loadPage('home');
             } else {
-                window.location.hash = '#home';
-            }
+                // ==========================================================
+                // NEW USER SIGN-UP ENGINE RUNTIME
+                // CRITICAL FIX: Direct insert code removed. The database trigger 
+                // generates profile columns automatically inside public.profiles!
+                // ==========================================================
+                const { data, error } = await supabase.auth.signUp({
+                    email: email,
+                    password: password
+                });
 
+                if (error) throw error;
+
+                // Handle email link verification check cases elegantly
+                if (data.user && !data.session) {
+                    alert("Registration successful! Please check your email inbox to verify your account credentials.");
+                    isLoginMode = true;
+                    title.innerText = "Login to NectarStream";
+                    submitBtn.innerText = "Sign In";
+                    toggleLink.innerText = "Register here";
+                    toggleLink.previousSibling.textContent = "Don't have an account? ";
+                    form.reset();
+                } else {
+                    alert("Account registered successfully!");
+                    window.loadPage('home');
+                }
+            }
         } catch (err) {
-            console.error("Authentication Process Error:", err);
-            alert(err.message);
-            
-            actionBtn.innerText = isSignUp ? 'Sign Up as Artist' : 'Sign In';
-            actionBtn.disabled = false;
+            console.error("Authentication Exception Error Loop:", err.message);
+            alert("Authentication Failed: " + err.message);
+        } finally {
+            // Restore submission elements states upon resolution paths completion
+            submitBtn.disabled = false;
+            submitBtn.innerText = isLoginMode ? "Sign In" : "Register";
         }
-    };
+    });
 }
