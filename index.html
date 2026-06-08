@@ -7,8 +7,13 @@
 </head>
 <body>
 
-    <nav class="sidebar">
-        <div class="logo">🎵 NectarStream</div>
+    <nav class="sidebar" aria-label="Main navigation">
+        <div class="sidebar-top-row">
+            <div class="logo">🎵 NectarStream</div>
+            <button id="mobile-menu-toggle" class="mobile-menu-toggle" aria-label="Open navigation menu" onclick="toggleMobileMenu()">
+                <span>☰</span>
+            </button>
+        </div>
         <ul class="sidebar-menu">
             <li onclick="loadPage('home')">Home</li>
             <li onclick="loadPage('search')">Search</li>

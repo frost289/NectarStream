@@ -22,10 +22,13 @@
 }
 
 body {
-    background-color: var(--bg-main);
+    background: radial-gradient(circle at top left, rgba(255, 102, 0, 0.16), transparent 24%),
+                radial-gradient(circle at bottom right, rgba(208, 2, 27, 0.14), transparent 30%),
+                var(--bg-main);
     color: var(--text-main);
     min-height: 100vh;
     display: flex;
+    flex-direction: column;
     overflow-x: hidden;
 }
 
@@ -35,8 +38,8 @@ body {
 /* Main wrapper assuming a layout with a permanent sidebar */
 #app-layout {
     display: flex;
-    width: 100vw;
-    height: 100vh;
+    width: 100%;
+    min-height: 100vh;
     position: relative;
 }
 
@@ -54,6 +57,14 @@ body {
     top: 0;
     border-right: 1px solid var(--border-color);
     overflow-y: auto;
+    transition: transform 0.3s ease, width 0.3s ease, background-color 0.3s ease;
+}
+
+.sidebar-top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
 }
 
 .sidebar-logo, .logo {
@@ -63,6 +74,25 @@ body {
     letter-spacing: -1px;
     text-transform: uppercase;
     font-style: italic;
+}
+
+.mobile-menu-toggle {
+    display: none;
+    width: 44px;
+    height: 44px;
+    background-color: rgba(255, 255, 255, 0.08);
+    color: var(--text-main);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 14px;
+    font-size: 24px;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.mobile-menu-toggle:hover {
+    background-color: rgba(255, 255, 255, 0.14);
 }
 
 .sidebar-menu, .sidebar {
@@ -99,10 +129,9 @@ body {
 #app-container {
     margin-left: 250px;
     flex: 1;
-    padding: 50px;
-    padding-bottom: 130px;
+    padding: 50px 48px 150px;
     overflow-y: auto;
-    height: 100vh;
+    min-height: 100vh;
     background: linear-gradient(135deg, rgba(255, 102, 0, 0.05) 0%, var(--bg-main) 50%, rgba(208, 2, 27, 0.05) 100%);
 }
 
@@ -126,16 +155,24 @@ h2 {
 
 /* Flex/Grid dashboard sections */
 .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 28px;
+    display: flex;
+    flex-direction: row;
+    gap: 24px;
+    overflow-x: auto;
+    padding-bottom: 10px;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+}
+
+.grid > .card {
+    scroll-snap-align: start;
 }
 
 /* Elegant Music Card layout */
 .card {
     background-color: rgba(24, 24, 24, 0.8);
     padding: 0;
-    border-radius: 12px;
+    border-radius: 16px;
     cursor: pointer;
     transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
     border: 1px solid rgba(255, 255, 255, 0.05);
@@ -143,6 +180,8 @@ h2 {
     flex-direction: column;
     gap: 0;
     overflow: hidden;
+    min-width: 220px;
+    flex: 0 0 220px;
 }
 
 .card:hover {
@@ -541,6 +580,186 @@ input[type="text"][placeholder*="search" i]:focus {
     font-weight: 800;
     margin-bottom: 20px;
     color: var(--text-main);
+}
+
+/* Responsive layout for tablets and phones */
+@media (max-width: 1024px) {
+    .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+        padding: 20px 18px;
+        border-right: none;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        flex-direction: row;
+        align-items: center;
+        gap: 16px;
+        overflow-x: auto;
+    }
+
+    .sidebar-menu, .sidebar {
+        flex-direction: row;
+        gap: 10px;
+    }
+
+    .sidebar-menu li, .sidebar li {
+        white-space: nowrap;
+        padding: 10px 14px;
+        border-radius: 22px;
+        transform: none;
+    }
+
+    #app-container {
+        margin-left: 0;
+        padding: 32px 24px 140px;
+    }
+}
+
+@media (max-width: 768px) {
+    .mobile-menu-toggle {
+        display: inline-flex;
+    }
+
+    .sidebar {
+        width: 100%;
+        position: fixed;
+        top: 0;
+        left: 0;
+        padding: 16px 18px;
+        background-color: rgba(0, 0, 0, 0.95);
+        border-right: none;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        flex-direction: column;
+        align-items: stretch;
+        gap: 16px;
+        z-index: 50;
+    }
+
+    .sidebar-menu {
+        flex-direction: column;
+        gap: 10px;
+        max-height: 0;
+        overflow: hidden;
+        visibility: hidden;
+        opacity: 0;
+        transition: max-height 0.3s ease, opacity 0.3s ease, visibility 0.3s ease;
+    }
+
+    .sidebar.mobile-open .sidebar-menu {
+        max-height: 500px;
+        visibility: visible;
+        opacity: 1;
+    }
+
+    .sidebar-top-row {
+        align-items: center;
+    }
+
+    .sidebar-menu li, .sidebar li {
+        width: 100%;
+        padding: 12px 16px;
+        border-radius: 18px;
+    }
+
+    #app-container {
+        padding-top: 120px;
+    }
+}
+
+@media (max-width: 768px) {
+    #app-layout {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        background-color: rgba(0, 0, 0, 0.92);
+    }
+
+    .sidebar-menu, .sidebar {
+        gap: 8px;
+    }
+
+    .sidebar-menu li, .sidebar li {
+        font-size: 14px;
+        padding: 10px 12px;
+    }
+
+    #app-container {
+        padding: 28px 20px 130px;
+    }
+
+    .grid {
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 20px;
+    }
+
+    .card h3 {
+        font-size: 15px;
+    }
+
+    .card small {
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 540px) {
+    body {
+        font-size: 14px;
+    }
+
+    .sidebar {
+        flex-wrap: wrap;
+        padding: 16px 14px;
+    }
+
+    .sidebar-menu, .sidebar {
+        flex-wrap: wrap;
+    }
+
+    .sidebar-menu li, .sidebar li {
+        width: auto;
+        flex: 1 1 auto;
+        border-radius: 999px;
+        padding: 10px 14px;
+    }
+
+    .card {
+        border-radius: 18px;
+    }
+
+    .player-bar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        height: auto;
+        padding: 16px;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .song-info {
+        flex: 1 1 100%;
+        font-size: 13px;
+    }
+
+    .controls {
+        flex: 1 1 100%;
+        justify-content: space-between;
+    }
+
+    #progress-bar {
+        height: 6px;
+    }
+
+    .controls button {
+        width: 44px;
+        height: 44px;
+    }
 }
 
 /* Link styling */

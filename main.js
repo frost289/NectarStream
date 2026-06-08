@@ -27,6 +27,7 @@ window.loadPage = async function(page) {
     const activeNav = Array.from(document.querySelectorAll('.sidebar-menu li'))
                            .find(li => li.getAttribute('onclick')?.includes(`'${page}'`));
     if (activeNav) activeNav.classList.add('active');
+    document.querySelector('.sidebar')?.classList.remove('mobile-open');
 
     // Route Rendering Switchboard
     switch(page) {
@@ -218,3 +219,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Default entry loading routing on application initialization block
     window.loadPage('home');
 });
+
+window.toggleMobileMenu = function() {
+    const sidebar = document.querySelector('.sidebar');
+    if (!sidebar) return;
+    sidebar.classList.toggle('mobile-open');
+};
