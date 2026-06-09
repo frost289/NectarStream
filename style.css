@@ -5,7 +5,7 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
 :root {
@@ -13,8 +13,8 @@
     --bg-sidebar: #000000;
     --bg-card: #181818;
     --bg-card-hover: #282828;
-    --primary: #1DB954;
-    --primary-hover: #1ed760;
+    --primary: #FF6600;
+    --primary-hover: #ff8533;
     --text-main: #ffffff;
     --text-muted: #b3b3b3;
     --border-color: #282828;
@@ -22,7 +22,9 @@
 }
 
 body {
-    background: var(--bg-main);
+    background: radial-gradient(circle at top left, rgba(255, 102, 0, 0.16), transparent 24%),
+                radial-gradient(circle at bottom right, rgba(208, 2, 27, 0.14), transparent 30%),
+                var(--bg-main);
     color: var(--text-main);
     min-height: 100vh;
     display: flex;
@@ -33,6 +35,7 @@ body {
 /* ==========================================================================
    2. APP LAYOUT STRUCTURE
    ========================================================================== */
+/* Main wrapper assuming a layout with a permanent sidebar */
 #app-layout {
     display: flex;
     width: 100%;
@@ -40,22 +43,21 @@ body {
     position: relative;
 }
 
-/* Sidebar Styling - Spotify Inspired */
+/* Sidebar Styling */
 .sidebar {
     width: 250px;
     background-color: var(--bg-sidebar);
-    padding: 24px 16px;
+    padding: 28px;
     display: flex;
     flex-direction: column;
-    gap: 32px;
+    gap: 40px;
     height: 100vh;
     position: fixed;
     left: 0;
     top: 0;
     border-right: 1px solid var(--border-color);
     overflow-y: auto;
-    transition: transform 0.3s ease, width 0.3s ease;
-    z-index: 100;
+    transition: transform 0.3s ease, width 0.3s ease, background-color 0.3s ease;
 }
 
 .sidebar-top-row {
@@ -63,26 +65,26 @@ body {
     justify-content: space-between;
     align-items: center;
     gap: 16px;
-    padding: 0 12px;
 }
 
 .sidebar-logo, .logo {
     color: var(--primary);
-    font-size: 24px;
+    font-size: 28px;
     font-weight: 900;
-    letter-spacing: -0.5px;
+    letter-spacing: -1px;
     text-transform: uppercase;
+    font-style: italic;
 }
 
 .mobile-menu-toggle {
     display: none;
-    width: 40px;
-    height: 40px;
-    background-color: rgba(255, 255, 255, 0.1);
+    width: 44px;
+    height: 44px;
+    background-color: rgba(255, 255, 255, 0.08);
     color: var(--text-main);
-    border: none;
-    border-radius: 20px;
-    font-size: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 14px;
+    font-size: 24px;
     cursor: pointer;
     align-items: center;
     justify-content: center;
@@ -90,46 +92,47 @@ body {
 }
 
 .mobile-menu-toggle:hover {
-    background-color: rgba(255, 255, 255, 0.2);
+    background-color: rgba(255, 255, 255, 0.14);
 }
 
 .sidebar-menu, .sidebar {
     list-style: none;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 12px;
 }
 
 .sidebar-menu li, .sidebar li {
     color: var(--text-muted);
-    font-size: 14px;
-    font-weight: 500;
+    font-size: 15px;
+    font-weight: 600;
     cursor: pointer;
-    padding: 10px 16px;
-    border-radius: 8px;
-    transition: all 0.2s ease;
+    padding: 12px 16px;
+    border-radius: 28px;
+    transition: all 0.3s ease-in-out;
     position: relative;
 }
 
 .sidebar-menu li:hover, .sidebar li:hover {
     color: var(--text-main);
     background-color: rgba(255, 255, 255, 0.1);
+    transform: translateX(4px);
 }
 
 .sidebar-menu li.active, .sidebar li.active {
-    color: var(--primary);
-    background-color: rgba(29, 185, 84, 0.2);
-    font-weight: 600;
+    color: var(--text-main);
+    background-color: var(--primary);
+    box-shadow: 0 4px 12px rgba(255, 102, 0, 0.3);
 }
 
 /* Dynamic Content Container */
 #app-container {
     margin-left: 250px;
     flex: 1;
-    padding: 40px 48px 150px;
+    padding: 50px 48px 150px;
     overflow-y: auto;
     min-height: 100vh;
-    background: var(--bg-main);
+    background: linear-gradient(135deg, rgba(255, 102, 0, 0.05) 0%, var(--bg-main) 50%, rgba(208, 2, 27, 0.05) 100%);
 }
 
 /* ==========================================================================
@@ -144,21 +147,17 @@ h1 {
 }
 
 h2 {
-    font-size: 24px;
-    font-weight: 700;
-    margin: 40px 0 20px 0;
+    font-size: 26px;
+    font-weight: 800;
+    margin: 40px 0 24px 0;
     letter-spacing: -0.5px;
-}
-
-.section {
-    margin-bottom: 48px;
 }
 
 /* Flex/Grid dashboard sections */
 .grid {
     display: flex;
     flex-direction: row;
-    gap: 16px;
+    gap: 24px;
     overflow-x: auto;
     padding-bottom: 10px;
     scroll-snap-type: x mandatory;
@@ -169,27 +168,27 @@ h2 {
     scroll-snap-align: start;
 }
 
-/* Elegant Music Card layout - Spotify Style */
+/* Elegant Music Card layout */
 .card {
-    background: linear-gradient(135deg, rgba(40, 40, 40, 0.8) 0%, rgba(20, 20, 20, 0.8) 100%);
+    background-color: rgba(24, 24, 24, 0.8);
     padding: 0;
-    border-radius: 12px;
+    border-radius: 16px;
     cursor: pointer;
     transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-    border: none;
+    border: 1px solid rgba(255, 255, 255, 0.05);
     display: flex;
     flex-direction: column;
     gap: 0;
     overflow: hidden;
-    min-width: 200px;
-    flex: 0 0 200px;
-    backdrop-filter: blur(10px);
+    min-width: 220px;
+    flex: 0 0 220px;
 }
 
 .card:hover {
-    background: linear-gradient(135deg, rgba(50, 50, 50, 0.95) 0%, rgba(30, 30, 30, 0.95) 100%);
-    transform: translateY(-6px);
-    box-shadow: 0 16px 40px rgba(29, 185, 84, 0.15);
+    background-color: rgba(32, 32, 32, 0.9);
+    transform: translateY(-8px);
+    box-shadow: 0 12px 32px rgba(255, 102, 0, 0.2);
+    border-color: rgba(255, 102, 0, 0.3);
 }
 
 /* Prevents massive broken images from throwing off card scaling */
@@ -199,26 +198,24 @@ h2 {
     object-fit: cover;
     border-radius: 0;
     background-color: #1a1a1a;
+    box-shadow: none;
 }
 
 .card h3 {
-    font-size: 15px;
-    font-weight: 600;
+    font-size: 16px;
+    font-weight: 700;
     color: var(--text-main);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    padding: 12px 12px 0 12px;
+    padding: 14px 12px 0 12px;
 }
 
 .card small {
-    font-size: 12px;
+    font-size: 13px;
     color: var(--text-muted);
-    padding: 4px 12px 12px 12px;
+    padding: 0 12px 12px 12px;
     line-height: 1.4;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
 
 /* ==========================================================================
@@ -242,11 +239,10 @@ h2 {
 .auth-container {
     max-width: 500px;
     margin: 60px auto;
-    background: rgba(24, 24, 24, 0.8);
+    background: rgba(24, 24, 24, 0.6);
     padding: 40px;
     border-radius: 16px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .studio-wrapper {
@@ -265,10 +261,10 @@ input[type="url"],
 select {
     width: 100%;
     padding: 12px 16px;
-    background-color: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    background-color: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     color: var(--text-main);
-    border-radius: 8px;
+    border-radius: 6px;
     font-size: 15px;
     transition: all 0.2s ease;
 }
@@ -276,15 +272,15 @@ select {
 input:focus, select:focus {
     outline: none;
     border-color: var(--primary);
-    background-color: rgba(255, 255, 255, 0.12);
-    box-shadow: 0 0 8px rgba(29, 185, 84, 0.2);
+    background-color: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 0 8px rgba(255, 102, 0, 0.2);
 }
 
 /* Global Button Designs */
 button, button[type="submit"] {
     background-color: var(--primary);
     color: white;
-    font-weight: 600;
+    font-weight: bold;
     font-size: 15px;
     padding: 12px 32px;
     border: none;
@@ -295,8 +291,8 @@ button, button[type="submit"] {
 
 button:hover {
     background-color: var(--primary-hover);
-    transform: scale(1.04);
-    box-shadow: 0 4px 12px rgba(29, 185, 84, 0.3);
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(255, 102, 0, 0.3);
 }
 
 button:active {
@@ -319,12 +315,11 @@ button:disabled {
     border: 1px solid rgba(255, 255, 255, 0.05);
     flex: 1;
     transition: all 0.3s ease;
-    backdrop-filter: blur(10px);
 }
 
 .stats-card:hover {
-    border-color: rgba(29, 185, 84, 0.3);
-    box-shadow: 0 8px 20px rgba(29, 185, 84, 0.1);
+    border-color: rgba(255, 102, 0, 0.2);
+    box-shadow: 0 8px 20px rgba(255, 102, 0, 0.1);
 }
 
 .studio-table {
@@ -341,7 +336,7 @@ button:disabled {
     letter-spacing: 1px;
     padding: 14px 16px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    font-weight: 600;
+    font-weight: 700;
 }
 
 .studio-table td {
@@ -352,7 +347,7 @@ button:disabled {
 }
 
 .studio-table tr:hover td {
-    background-color: rgba(29, 185, 84, 0.05);
+    background-color: rgba(255, 102, 0, 0.05);
 }
 
 /* ==========================================================================
@@ -365,14 +360,13 @@ button:disabled {
     width: 100vw;
     height: 100px;
     background: linear-gradient(to top, #0a0a0a, #181818);
-    border-top: 1px solid rgba(29, 185, 84, 0.2);
+    border-top: 1px solid rgba(255, 102, 0, 0.1);
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 12px 32px;
     z-index: 9999;
     gap: 32px;
-    backdrop-filter: blur(10px);
 }
 
 .song-info {
@@ -415,7 +409,7 @@ button:disabled {
     border-radius: 50%;
     background: var(--primary);
     cursor: pointer;
-    box-shadow: 0 2px 8px rgba(29, 185, 84, 0.4);
+    box-shadow: 0 2px 8px rgba(255, 102, 0, 0.4);
 }
 
 #progress-bar::-moz-range-thumb {
@@ -425,7 +419,7 @@ button:disabled {
     background: var(--primary);
     cursor: pointer;
     border: none;
-    box-shadow: 0 2px 8px rgba(29, 185, 84, 0.4);
+    box-shadow: 0 2px 8px rgba(255, 102, 0, 0.4);
 }
 
 .controls {
@@ -445,17 +439,16 @@ button:disabled {
     align-items: center;
     justify-content: center;
     font-size: 18px;
-    background-color: rgba(29, 185, 84, 0.15);
+    background-color: rgba(255, 102, 0, 0.2);
     color: var(--primary);
     transition: all 0.2s ease;
-    border: none;
 }
 
 .controls button:hover {
     background-color: var(--primary);
     color: white;
     transform: scale(1.1);
-    box-shadow: 0 4px 12px rgba(29, 185, 84, 0.3);
+    box-shadow: 0 4px 12px rgba(255, 102, 0, 0.3);
 }
 
 #play-pause-btn {
@@ -465,6 +458,7 @@ button:disabled {
     background-color: var(--primary) !important;
     color: white !important;
 }
+
 
 /* Container to group the image and the overlay play switch safely */
 .card-img-container {
@@ -483,43 +477,43 @@ button:disabled {
     transition: filter 0.3s ease;
 }
 
-.card:hover .card-img-container img {
-    filter: brightness(0.7);
-}
-
 /* Hidden visual state by default */
 .play-hover-btn {
     position: absolute;
     bottom: 12px;
     right: 12px;
-    width: 48px;
-    height: 48px;
+    width: 52px;
+    height: 52px;
     background-color: var(--primary);
     color: white;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 20px;
+    font-size: 22px;
     opacity: 0;
     transform: translateY(12px) scale(0.8);
     transition: all 0.3s ease;
-    box-shadow: 0 8px 20px rgba(29, 185, 84, 0.4);
+    box-shadow: 0 8px 20px rgba(255, 102, 0, 0.4);
     z-index: 2;
     border: none;
     padding: 0;
     cursor: pointer;
 }
 
+/* Trigger actions when user targets the card wrapper block */
 .card:hover .play-hover-btn {
     opacity: 1;
     transform: translateY(0) scale(1);
 }
 
+.card:hover .card-img-container img {
+    filter: brightness(0.6);
+}
+
 .play-hover-btn:hover {
     background-color: var(--primary-hover);
     transform: scale(1.1);
-    box-shadow: 0 8px 24px rgba(29, 185, 84, 0.5);
 }
 
 /* ==========================================================================
@@ -534,13 +528,13 @@ button:disabled {
 }
 
 ::-webkit-scrollbar-thumb {
-    background: rgba(29, 185, 84, 0.4);
+    background: rgba(255, 102, 0, 0.4);
     border-radius: 8px;
     transition: background 0.2s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: rgba(29, 185, 84, 0.7);
+    background: rgba(255, 102, 0, 0.7);
 }
 
 /* Form group spacing */
@@ -573,7 +567,7 @@ input[type="search"]:focus,
 input[type="text"][placeholder*="search" i]:focus {
     background-color: rgba(255, 255, 255, 0.12);
     border-color: var(--primary);
-    box-shadow: 0 0 12px rgba(29, 185, 84, 0.15);
+    box-shadow: 0 0 12px rgba(255, 102, 0, 0.15);
 }
 
 /* Section containers */
@@ -588,111 +582,183 @@ input[type="text"][placeholder*="search" i]:focus {
     color: var(--text-main);
 }
 
-/* ==========================================================================
-   7. RESPONSIVE MOBILE DESIGN
-   ========================================================================== */
+/* Responsive layout for tablets and phones */
 @media (max-width: 1024px) {
-    .sidebar {
-        width: 200px;
-        padding: 16px 12px;
-        gap: 24px;
-    }
-
-    #app-container {
-        margin-left: 200px;
-        padding: 32px 32px 150px;
-    }
-
-    .card {
-        min-width: 180px;
-        flex: 0 0 180px;
-    }
-}
-
-@media (max-width: 768px) {
     .sidebar {
         width: 100%;
         height: auto;
         position: relative;
+        padding: 20px 18px;
         border-right: none;
-        border-bottom: 1px solid var(--border-color);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
         flex-direction: row;
-        padding: 12px;
+        align-items: center;
         gap: 16px;
-        transform: translateX(-100%);
-        transition: transform 0.3s ease;
+        overflow-x: auto;
     }
 
-    .sidebar.mobile-open {
-        transform: translateX(0);
+    .sidebar-menu, .sidebar {
+        flex-direction: row;
+        gap: 10px;
     }
 
-    .mobile-menu-toggle {
-        display: flex;
+    .sidebar-menu li, .sidebar li {
+        white-space: nowrap;
+        padding: 10px 14px;
+        border-radius: 22px;
+        transform: none;
     }
 
     #app-container {
         margin-left: 0;
-        padding: 24px 16px 150px;
-    }
-
-    .sidebar-menu {
-        flex-direction: row;
-        overflow-x: auto;
-    }
-
-    h1 {
-        font-size: 32px;
-    }
-
-    h2 {
-        font-size: 20px;
-    }
-
-    .grid {
-        gap: 12px;
-    }
-
-    .card {
-        min-width: 160px;
-        flex: 0 0 160px;
+        padding: 32px 24px 140px;
     }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 768px) {
+    .mobile-menu-toggle {
+        display: inline-flex;
+    }
+
+    .sidebar {
+        width: 100%;
+        position: fixed;
+        top: 0;
+        left: 0;
+        padding: 16px 18px;
+        background-color: rgba(0, 0, 0, 0.95);
+        border-right: none;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        flex-direction: column;
+        align-items: stretch;
+        gap: 16px;
+        z-index: 50;
+    }
+
+    .sidebar-menu {
+        flex-direction: column;
+        gap: 10px;
+        max-height: 0;
+        overflow: hidden;
+        visibility: hidden;
+        opacity: 0;
+        transition: max-height 0.3s ease, opacity 0.3s ease, visibility 0.3s ease;
+    }
+
+    .sidebar.mobile-open .sidebar-menu {
+        max-height: 500px;
+        visibility: visible;
+        opacity: 1;
+    }
+
+    .sidebar-top-row {
+        align-items: center;
+    }
+
+    .sidebar-menu li, .sidebar li {
+        width: 100%;
+        padding: 12px 16px;
+        border-radius: 18px;
+    }
+
     #app-container {
-        padding: 16px 12px 150px;
+        padding-top: 120px;
+    }
+}
+
+@media (max-width: 768px) {
+    #app-layout {
+        flex-direction: column;
     }
 
-    h1 {
-        font-size: 28px;
-        margin-bottom: 20px;
+    .sidebar {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        background-color: rgba(0, 0, 0, 0.92);
     }
 
-    h2 {
-        font-size: 18px;
-        margin: 28px 0 16px 0;
+    .sidebar-menu, .sidebar {
+        gap: 8px;
+    }
+
+    .sidebar-menu li, .sidebar li {
+        font-size: 14px;
+        padding: 10px 12px;
+    }
+
+    #app-container {
+        padding: 28px 20px 130px;
+    }
+
+    .grid {
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 20px;
+    }
+
+    .card h3 {
+        font-size: 15px;
+    }
+
+    .card small {
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 540px) {
+    body {
+        font-size: 14px;
+    }
+
+    .sidebar {
+        flex-wrap: wrap;
+        padding: 16px 14px;
+    }
+
+    .sidebar-menu, .sidebar {
+        flex-wrap: wrap;
+    }
+
+    .sidebar-menu li, .sidebar li {
+        width: auto;
+        flex: 1 1 auto;
+        border-radius: 999px;
+        padding: 10px 14px;
     }
 
     .card {
-        min-width: 140px;
-        flex: 0 0 140px;
+        border-radius: 18px;
     }
 
     .player-bar {
-        height: 120px;
-        flex-direction: column;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        height: auto;
+        padding: 16px;
+        flex-wrap: wrap;
         gap: 16px;
-        padding: 12px 16px;
     }
 
-    .progress-container {
-        width: 100%;
+    .song-info {
+        flex: 1 1 100%;
+        font-size: 13px;
     }
 
     .controls {
-        width: 100%;
-        justify-content: center;
+        flex: 1 1 100%;
+        justify-content: space-between;
+    }
+
+    #progress-bar {
+        height: 6px;
+    }
+
+    .controls button {
+        width: 44px;
+        height: 44px;
     }
 }
 
