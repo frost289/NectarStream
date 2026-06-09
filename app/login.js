@@ -27,7 +27,7 @@ export async function renderLogin() {
                     </div>
                     
                     <button type="submit" id="auth-submit-btn" class="btn-primary" 
-                            style="padding: 14px; background: #f50; color: #fff; border: none; border-radius: 25px; font-weight: bold; cursor: pointer; font-size: 16px; transition: background 0.2s; margin-top: 10px;">
+                            style="padding: 14px; background: #f50; color: #fff; border: none; border-radius: 25px; font-weight: bold; cursor: pointer; font-size: 16px; transition: background 0.2s;">
                         Sign In
                     </button>
                 </form>
