@@ -23,19 +23,29 @@ export async function renderHome() {
 
     // 1. Clear container and inject semantic grid layout scaffolds immediately
     container.innerHTML = `
-        <h1>Listen Now</h1>
+        <div style="margin-bottom: 40px;">
+            <h1>🎵 Welcome to NectarStream</h1>
+            <p style="color: var(--text-muted); font-size: 16px;">Discover the best music from Malawi</p>
+        </div>
         
         <div class="section">
-            <h2>New Releases</h2>
+            <h2>🆕 New Releases</h2>
             <div id="new-releases-grid" class="grid">
-                <p style="color: var(--text-muted);">Tuning network frequencies...</p>
+                <p style="color: var(--text-muted);">Loading tracks...</p>
             </div>
         </div>
 
         <div class="section">
-            <h2>Trending Tracks (Most Played)</h2>
+            <h2>🔥 Trending Now</h2>
             <div id="trending-grid" class="grid">
-                <p style="color: var(--text-muted);">Analyzing streaming loops...</p>
+                <p style="color: var(--text-muted);">Loading trending tracks...</p>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>⭐ Featured Picks</h2>
+            <div id="featured-grid" class="grid">
+                <p style="color: var(--text-muted);">Loading featured tracks...</p>
             </div>
         </div>
     `;
@@ -43,7 +53,8 @@ export async function renderHome() {
     // 2. Trigger asynchronous, non-blocking data lookups parallelly
     await Promise.all([
         loadNewReleases(),
-        loadTrendingTracks()
+        loadTrendingTracks(),
+        loadFeaturedTracks()
     ]);
 }
 
@@ -59,12 +70,12 @@ async function loadNewReleases() {
             .from(DB_CONFIG.table)
             .select('*')
             .order('created_at', { ascending: false })
-            .limit(6);
+            .limit(8);
 
         if (error) throw error;
 
         if (!songs || songs.length === 0) {
-            grid.innerHTML = `<p style="color: var(--text-muted); grid-column: 1/-1;">No songs have been uploaded to NectarStream yet.</p>`;
+            grid.innerHTML = `<p style="color: var(--text-muted);">No songs have been uploaded yet.</p>`;
             return;
         }
 
@@ -73,8 +84,8 @@ async function loadNewReleases() {
     } catch (err) {
         console.error("Home View Error [New Releases Query]:", err.message);
         grid.innerHTML = `
-            <p style="color: var(--danger); font-size: 14px; grid-column: 1/-1;">
-                ⚠️ Failed to load new releases. Verify 'created_at' exists in your table.
+            <p style="color: var(--danger); font-size: 14px;">
+                ⚠️ Failed to load new releases
             </p>`;
     }
 }
@@ -91,12 +102,12 @@ async function loadTrendingTracks() {
             .from(DB_CONFIG.table)
             .select('*')
             .order(DB_CONFIG.plays, { ascending: false })
-            .limit(6);
+            .limit(8);
 
         if (error) throw error;
 
         if (!songs || songs.length === 0) {
-            grid.innerHTML = `<p style="color: var(--text-muted); grid-column: 1/-1;">No trending tracks recorded yet.</p>`;
+            grid.innerHTML = `<p style="color: var(--text-muted);">No trending tracks yet.</p>`;
             return;
         }
 
@@ -105,8 +116,41 @@ async function loadTrendingTracks() {
     } catch (err) {
         console.error("Home View Error [Trending Query]:", err.message);
         grid.innerHTML = `
-            <p style="color: var(--danger); font-size: 14px; grid-column: 1/-1;">
-                ⚠️ Failed to load trending tracks. Ensure your '${DB_CONFIG.plays}' column exists.
+            <p style="color: var(--danger); font-size: 14px;">
+                ⚠️ Failed to load trending tracks
+            </p>`;
+    }
+}
+
+/**
+ * Fetches and displays featured tracks (is_featured = true)
+ */
+async function loadFeaturedTracks() {
+    const grid = document.getElementById('featured-grid');
+    if (!grid) return;
+
+    try {
+        const { data: songs, error } = await supabase
+            .from(DB_CONFIG.table)
+            .select('*')
+            .eq('is_featured', true)
+            .order('created_at', { ascending: false })
+            .limit(8);
+
+        if (error) throw error;
+
+        if (!songs || songs.length === 0) {
+            grid.innerHTML = `<p style="color: var(--text-muted);">No featured tracks available.</p>`;
+            return;
+        }
+
+        grid.innerHTML = songs.map(song => buildTrackCardHtml(song)).join('');
+
+    } catch (err) {
+        console.error("Home View Error [Featured Query]:", err.message);
+        grid.innerHTML = `
+            <p style="color: var(--danger); font-size: 14px;">
+                ⚠️ Failed to load featured tracks
             </p>`;
     }
 }
@@ -123,7 +167,7 @@ function buildTrackCardHtml(song) {
     const plays = song[DB_CONFIG.plays] || 0;
     
     // Fallback placeholder image structure if database cover paths are empty or broken
-    const coverUrl = song[DB_CONFIG.coverUrl] || 'https://via.placeholder.com/250/1a1a1a/ffffff?text=NectarStream';
+    const coverUrl = song[DB_CONFIG.coverUrl] || 'https://via.placeholder.com/250/1a1a1a/1DB954?text=♪';
 
     // Format display metric values strings safely
     const playLabel = plays === 1 ? '1 play' : `${plays.toLocaleString()} plays`;
@@ -133,10 +177,10 @@ function buildTrackCardHtml(song) {
         <div class="card" onclick="window.playSong('${audioUrl}', '${title.replace(/'/g, "\\'")}', '${id}')">
             <div class="card-img-container">
                 <img src="${coverUrl}" alt="${title} Album Art" loading="lazy">
-                <button class="play-hover-btn">▶</button>
+                <button class="play-hover-btn" onclick="event.stopPropagation(); window.playSong('${audioUrl}', '${title.replace(/'/g, "\\'")}', '${id}')">▶</button>
             </div>
             <h3>${title}</h3>
-            <small>${artist} • ${playLabel}</small>
+            <small>${artist}</small>
         </div>
     `;
 }
