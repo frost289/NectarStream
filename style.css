@@ -523,6 +523,72 @@ button:disabled {
 }
 
 /* ==========================================================================
+   7. SCROLLBAR STYLING & MISC ENHANCEMENTS
+   ========================================================================== */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(29, 185, 84, 0.4);
+    border-radius: 8px;
+    transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(29, 185, 84, 0.7);
+}
+
+/* Form group spacing */
+form div {
+    margin-bottom: 20px;
+}
+
+form label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--text-main);
+}
+
+/* Search input styling */
+input[type="search"],
+input[type="text"][placeholder*="search" i] {
+    width: 100%;
+    padding: 10px 16px;
+    background-color: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-main);
+    border-radius: 24px;
+    font-size: 15px;
+    transition: all 0.2s ease;
+}
+
+input[type="search"]:focus,
+input[type="text"][placeholder*="search" i]:focus {
+    background-color: rgba(255, 255, 255, 0.12);
+    border-color: var(--primary);
+    box-shadow: 0 0 12px rgba(29, 185, 84, 0.15);
+}
+
+/* Section containers */
+.section {
+    margin-bottom: 40px;
+}
+
+.section-title {
+    font-size: 24px;
+    font-weight: 800;
+    margin-bottom: 20px;
+    color: var(--text-main);
+}
+
+/* ==========================================================================
    7. RESPONSIVE MOBILE DESIGN
    ========================================================================== */
 @media (max-width: 1024px) {
@@ -628,4 +694,15 @@ button:disabled {
         width: 100%;
         justify-content: center;
     }
+}
+
+/* Link styling */
+a {
+    color: var(--primary);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+a:hover {
+    color: var(--primary-hover);
 }
