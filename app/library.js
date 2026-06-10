@@ -1,50 +1,173 @@
 import { supabase } from '../lib/supabaseClient.js';
 
+/**
+ * Main rendering router endpoint for the NectarStream Library Space
+ */
 export async function renderLibrary() {
     const container = document.getElementById('app-container');
+    if (!container) return;
+
+    // 1. Verify Active User Session
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+        container.innerHTML = `
+            <div style="padding: 40px; text-align: center;">
+                <h1 style="color: var(--danger);">Access Denied</h1>
+                <p style="color: var(--text-muted); margin-top: 10px;">Please log in to view your personal library collection.</p>
+            </div>
+        `;
+        return;
+    }
+
+    const userId = session.user.id;
+    console.log(`Library Engine: Compiling collections for User UUID [${userId}]`);
+
+    // 2. Inject structural UI layout scaffolds immediately
     container.innerHTML = `
-        <h1>Library / Bulletin Board</h1>
-        <div id="lit-form">
-            <textarea id="lit-input" placeholder="Share your literary work..."></textarea>
-            <button id="submit-lit">Publish to Library</button>
-        </div>
-        <div id="lit-posts"></div>
-    `;
-
-    document.getElementById('submit-lit').onclick = async () => {
-        const content = document.getElementById('lit-input').value;
-        if (!content) return alert("Please write something!");
-
-        // Insert with 0 default likes
-        const { error } = await supabase.from('literature').insert([{ content, likes: 0 }]);
-        if (error) return alert("Error saving: " + error.message);
+        <h1>Your Library</h1>
         
-        document.getElementById('lit-input').value = '';
-        loadPosts(); 
-    };
-
-    loadPosts();
-}
-
-async function loadPosts() {
-    const { data: posts } = await supabase.from('literature').select('*').order('created_at', { ascending: false });
-    const postsDiv = document.getElementById('lit-posts');
-    postsDiv.innerHTML = posts.map(post => `
-        <div class="post">
-            <p>${post.content}</p>
-            <div class="post-footer">
-                <small>Posted on ${new Date(post.created_at).toLocaleDateString()}</small>
-                <button onclick="likePost(${post.id}, ${post.likes})" class="like-btn">❤️ ${post.likes || 0}</button>
+        <div class="section">
+            <h2><?xml version="1.0" encoding="utf-8"?><svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 122.88 104.19" style="enable-background:new 0 0 122.88 104.19" xml:space="preserve"><g><path d="M62.63,6.25c0.56-2.85,2.03-4.68,4.04-5.61c1.63-0.76,3.54-0.83,5.52-0.31c1.72,0.45,3.53,1.37,5.26,2.69 c4.69,3.57,9.08,10.3,9.64,18.71c0.17,2.59,0.12,5.35-0.12,8.29c-0.16,1.94-0.41,3.98-0.75,6.1h19.95l0.09,0.01 c3.24,0.13,6.38,0.92,9.03,2.3c2.29,1.2,4.22,2.84,5.56,4.88c1.38,2.1,2.13,4.6,2.02,7.46c-0.08,2.12-0.65,4.42-1.81,6.87 c0.66,2.76,0.97,5.72,0.54,8.32c-0.36,2.21-1.22,4.17-2.76,5.63c0.08,3.65-0.41,6.71-1.39,9.36c-1.01,2.72-2.52,4.98-4.46,6.98 c-0.17,1.75-0.45,3.42-0.89,4.98c-0.55,1.96-1.36,3.76-2.49,5.35l0,0c-3.4,4.8-6.12,4.69-10.43,4.51c-0.6-0.02-1.24-0.05-2.24-0.05 l-39.03,0c-3.51,0-6.27-0.51-8.79-1.77c-2.49-1.25-4.62-3.17-6.89-6.01l-0.58-1.66V47.78l1.98-0.53 c5.03-1.36,8.99-5.66,12.07-10.81c3.16-5.3,5.38-11.5,6.9-16.51V6.76L62.63,6.25L62.63,6.25L62.63,6.25z M4,43.02h29.08 c2.2,0,4,1.8,4,4v53.17c0,2.2-1.8,4-4,4l-29.08,0c-2.2,0-4-1.8-4-4V47.02C0,44.82,1.8,43.02,4,43.02L4,43.02L4,43.02z M68.9,5.48 c-0.43,0.2-0.78,0.7-0.99,1.56V20.3l-0.12,0.76c-1.61,5.37-4.01,12.17-7.55,18.1c-3.33,5.57-7.65,10.36-13.27,12.57v40.61 c1.54,1.83,2.96,3.07,4.52,3.85c1.72,0.86,3.74,1.2,6.42,1.2l39.03,0c0.7,0,1.6,0.04,2.45,0.07c2.56,0.1,4.17,0.17,5.9-2.27v-0.01 c0.75-1.06,1.3-2.31,1.69-3.71c0.42-1.49,0.67-3.15,0.79-4.92l0.82-1.75c1.72-1.63,3.03-3.46,3.87-5.71 c0.86-2.32,1.23-5.11,1.02-8.61l-0.09-1.58l1.34-0.83c0.92-0.57,1.42-1.65,1.63-2.97c0.34-2.1-0.02-4.67-0.67-7.06l0.21-1.93 c1.08-2.07,1.6-3.92,1.67-5.54c0.06-1.68-0.37-3.14-1.17-4.35c-0.84-1.27-2.07-2.31-3.56-3.09c-1.92-1.01-4.24-1.59-6.66-1.69v0.01 l-26.32,0l0.59-3.15c0.57-3.05,0.98-5.96,1.22-8.72c0.23-2.7,0.27-5.21,0.12-7.49c-0.45-6.72-3.89-12.04-7.56-14.83 c-1.17-0.89-2.33-1.5-3.38-1.77C70.04,5.27,69.38,5.26,68.9,5.48L68.9,5.48L68.9,5.48z"/></g></svg>
+             Liked Tracks</h2>
+            <div id="liked-tracks-grid" class="grid">
+                <p style="color: var(--text-muted);">Syncing your favorites from the network...</p>
             </div>
         </div>
-    `).join('');
+
+        <div class="section">
+            <h2>
+            <svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 122.88 114.42"><defs><style>.cls-1{fill:#ee4856;}.cls-1,.cls-2{fill-rule:evenodd;}.cls-2{fill:#fff;}</style></defs><title>instagram-followers</title><path class="cls-1" d="M9.32,0H113.56a9.35,9.35,0,0,1,9.32,9.32V82.94a9.37,9.37,0,0,1-9.32,9.32H83.84L67.68,111.32a8.17,8.17,0,0,1-12.82,0L39,92.26H9.32A9.36,9.36,0,0,1,0,82.94V9.32A9.34,9.34,0,0,1,9.32,0Z"/><path class="cls-2" d="M46.47,49.89H76.41a11,11,0,0,1,11,11v4.29a1.35,1.35,0,0,1-1.35,1.34H36.83a1.35,1.35,0,0,1-1.35-1.34V60.88a11,11,0,0,1,11-11Zm15-32.33A14.22,14.22,0,1,1,47.22,31.78,14.22,14.22,0,0,1,61.44,17.56Z"/></svg>
+            Followed Artists</h2>
+            <div id="followed-artists-grid" class="grid">
+                <p style="color: var(--text-muted);">Syncing your creator inner circle...</p>
+            </div>
+        </div>
+    `;
+
+    // 3. Fire asynchronous queries in parallel threads
+    await Promise.all([
+        loadLikedTracks(userId),
+        loadFollowedArtists(userId)
+    ]);
 }
 
-window.likePost = async (id, currentLikes) => {
-    const { error } = await supabase
-        .from('literature')
-        .update({ likes: currentLikes + 1 })
-        .eq('id', id);
-        
-    if (!error) loadPosts(); // Refresh view
-};
+/**
+ * Fetches and resolves metadata for all tracks liked by the user
+ */
+async function loadLikedTracks(userId) {
+    const grid = document.getElementById('liked-tracks-grid');
+    if (!grid) return;
+
+    try {
+        // Step A: Grab interaction rows from likes table
+        const { data: likeLogs, error: likeErr } = await supabase
+            .from('likes')
+            .select('track_id')
+            .eq('user_id', userId);
+
+        if (likeErr) throw likeErr;
+        console.log("Supabase 'likes' raw logs pulled:", likeLogs);
+
+        if (!likeLogs || likeLogs.length === 0) {
+            grid.innerHTML = `<p style="color: var(--text-muted); grid-column: 1/-1;">Tracks you like will gather here. Explore the home feed to find your sound!</p>`;
+            return;
+        }
+
+        const trackIds = likeLogs.map(log => log.track_id);
+
+        // Step B: Fetch matching catalog rows using .in()
+        const { data: songs, error: songsErr } = await supabase
+            .from('songs')
+            .select('*')
+            .in('id', trackIds);
+
+        if (songsErr) throw songsErr;
+        console.log("Resolved songs catalog data matching likes:", songs);
+
+        // Guard: If table rows match but structural song records don't return (or are hidden by RLS)
+        if (!songs || songs.length === 0) {
+            grid.innerHTML = `<p style="color: var(--text-muted); grid-column: 1/-1;">Liked tracks couldn't be loaded. They may have been unprovisioned or restricted by security rules.</p>`;
+            return;
+        }
+
+        // Step C: Map out uniform component cards
+        grid.innerHTML = songs.map(song => `
+            <div class="card" onclick="window.playSong('${song.audio_url}', '${song.title.replace(/'/g, "\\'")}', '${song.id}')">
+                <div class="card-img-container">
+                    <img src="${song.cover_url || 'https://via.placeholder.com/250/1a1a1a/ffffff?text=NectarStream'}" alt="${song.title} Art" loading="lazy">
+                    <button class="play-hover-btn">▶</button>
+                </div>
+                <h3>${song.title}</h3>
+                <small>${song.artist_name || 'Unknown Creator'}</small>
+                <div style="display: flex; justify-content: flex-end; padding: 0 14px 14px 14px; margin-top: auto;">
+                    <span onclick="window.toggleLikeTrack('${song.id}', event); this.closest('.card').remove();" style="font-size: 12px; color: var(--primary); cursor: pointer; font-weight: bold;">💔 Unlike</span>
+                </div>
+            </div>
+        `).join('');
+
+    } catch (err) {
+        console.error("Library Pipeline Exception [Liked Tracks]:", err.message);
+        grid.innerHTML = `<p style="color: var(--danger); font-size: 14px; grid-column: 1/-1;">⚠️ Sync Fault: ${err.message}</p>`;
+    }
+}
+
+/**
+ * Fetches and resolves metadata for all artists followed by the user
+ */
+async function loadFollowedArtists(userId) {
+    const grid = document.getElementById('followed-artists-grid');
+    if (!grid) return;
+
+    try {
+        // Step A: Grab interaction rows from follows table
+        const { data: followLogs, error: followErr } = await supabase
+            .from('follows')
+            .select('artist_id')
+            .eq('user_id', userId);
+
+        if (followErr) throw followErr;
+        console.log("Supabase 'follows' raw logs pulled:", followLogs);
+
+        if (!followLogs || followLogs.length === 0) {
+            grid.innerHTML = `<p style="color: var(--text-muted); grid-column: 1/-1;">Artists you follow will appear here. Hit follow on creator cards to build your network.</p>`;
+            return;
+        }
+
+        const artistIds = followLogs.map(log => log.artist_id);
+
+        // Step B: Fetch matching profiles using .in()
+        const { data: profiles, error: profilesErr } = await supabase
+            .from('profiles')
+            .select('id, artist_name')
+            .in('id', artistIds);
+
+        if (profilesErr) throw profilesErr;
+        console.log("Resolved profiles data matching follows:", profiles);
+
+        // Guard: Handle empty profiles payload due to cascading deletions or RLS blocks
+        if (!profiles || profiles.length === 0) {
+            grid.innerHTML = `<p style="color: var(--text-muted); grid-column: 1/-1;">⚠️ Followed artist credentials could not be linked.</p>`;
+            return;
+        }
+
+        // Step C: Map out circular visual artist components
+        grid.innerHTML = profiles.map(profile => {
+            const nameDisplay = profile.artist_name ? profile.artist_name : `Unnamed Artist (${profile.id.slice(0, 6)})`;
+            return `
+                <div class="card" style="cursor: default;">
+                    <div class="card-img-container" style="border-radius: 50%; max-width: 120px; margin: 20px auto 10px auto; aspect-ratio: 1/1; background: #222;">
+                        <img src="https://via.placeholder.com/140/222/fff?text=👤" style="border-radius: 50%; width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+                    <h3 style="text-align: center; padding: 5px 12px; font-size: 15px;">${nameDisplay}</h3>
+                    <div style="display: flex; justify-content: center; padding: 10px 0 14px 0; margin-top: auto;">
+                        <button onclick="window.toggleFollowArtist('${profile.id}', event); this.closest('.card').remove();" style="background: rgba(255, 102, 0, 0.1); color: var(--primary); border: 1px solid var(--primary); padding: 5px 12px; border-radius: 20px; font-size: 11px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='var(--primary)'; this.style.color='#fff';" onmouseout="this.style.background='rgba(255, 102, 0, 0.1)'; this.style.color='var(--primary)';">Unfollow</button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+    } catch (err) {
+        console.error("Library Pipeline Exception [Followed Artists]:", err.message);
+        grid.innerHTML = `<p style="color: var(--danger); font-size: 14px; grid-column: 1/-1;">Sync Fault: ${err.message}</p>`;
+    }
+}

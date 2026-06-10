@@ -4,6 +4,7 @@ import { renderHome } from './app/home.js';
 import { renderStudio } from './app/studio.js';
 import { renderLogin } from './app/login.js';
 import { registerPlay } from './app/analytics.js';
+import { renderLibrary } from './app/library.js';
 
 // ==========================================================================
 // 1. GLOBAL STATE TRACKERS (Queue & Current Playback Engine)
@@ -53,11 +54,8 @@ window.loadPage = async function(page) {
             break;
 
         case 'library':
-            container.innerHTML = `
-                <div class="section">
-                    <h1 class="section-title">Your Library</h1>
-                    <p style="color: var(--text-muted);">Your saved songs, curated playlists, and followed artists will appear here.</p>
-                </div>`;
+            // FIX: Successfully routing to the dynamic user collection compiler
+            await renderLibrary();
             break;
 
         case 'literature':
@@ -90,31 +88,25 @@ window.logout = async function() {
 };
 
 // ==========================================================================
-// 4. MUSIC STREAMING PERSISTENT CONTROLLER (Enhanced Metadata Scraper)
+// 4. MUSIC STREAMING PERSISTENT CONTROLLER
 // ==========================================================================
 window.playSong = async function(audioUrl, title, songId = null) {
     const player = document.getElementById('global-audio-player');
     if (!player) return;
 
     try {
-        // Set audio stream sources and metadata values
         player.src = audioUrl;
         player.load();
         
-        // Execute dynamic non-blocking play audio thread
         await player.play();
         const playPauseBtn = document.getElementById('play-pause-btn');
         if (playPauseBtn) playPauseBtn.innerText = "⏸";
 
-        // Register background stream view analytics loop asynchronously
         if (songId) {
             await registerPlay(songId);
         }
 
-        // Build a backup runtime context queue from elements present on the page layout
         syncQueueFromDom(audioUrl);
-        
-        // Update Media Bar Visual Deck Metadata Context Labels
         updatePlayerMetadataLayout(audioUrl, title);
 
     } catch (err) {
@@ -154,9 +146,6 @@ window.prevSong = function() {
     window.playSong(prevTrack.url, prevTrack.title);
 };
 
-/**
- * Parses out current layout cards to construct a fluid queue list natively
- */
 function syncQueueFromDom(activeUrl) {
     const cards = document.querySelectorAll('.card');
     currentQueue = [];
@@ -164,7 +153,6 @@ function syncQueueFromDom(activeUrl) {
 
     cards.forEach((card, idx) => {
         const clickAttr = card.getAttribute('onclick') || '';
-        // Extract params safely out of the playSong execution pattern string
         const matches = clickAttr.match(/playSong\('(.*?)',\s*'(.*?)'/);
         
         if (matches && matches[1] && matches[2]) {
@@ -178,9 +166,6 @@ function syncQueueFromDom(activeUrl) {
     });
 }
 
-/**
- * Automatically targets rendering song nodes from dashboard cards to pull metadata 
- */
 function updatePlayerMetadataLayout(audioUrl, title) {
     const songLabel = document.getElementById('current-song');
     const artistLabel = document.getElementById('player-artist');
@@ -188,7 +173,6 @@ function updatePlayerMetadataLayout(audioUrl, title) {
     
     if (songLabel) songLabel.innerText = title;
     
-    // Look up active card matching target stream to scrap layout profiles
     const cards = document.querySelectorAll('.card');
     let foundMatch = false;
     
@@ -204,20 +188,81 @@ function updatePlayerMetadataLayout(audioUrl, title) {
         }
     });
     
-    // Fallback layouts if song is triggered without a matching grid container item
     if (!foundMatch) {
         if (coverImg) coverImg.src = 'https://via.placeholder.com/56';
         if (artistLabel) artistLabel.innerText = 'Unknown Artist';
     }
 }
 
-// Helper tracking converter to transform stream runtime frames to human-readable text
 function formatTimelineStamp(seconds) {
     if (isNaN(seconds)) return "0:00";
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
 }
+
+// ==========================================================================
+// 4B. SOCIAL INTERACTIONS & CURATION HANDLERS (New Ecosystem Additions)
+// ==========================================================================
+window.toggleLikeTrack = async function(trackId, event) {
+    if (event) event.stopPropagation(); // Avoid firing playSong card clicks
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return alert("Please log in to like tracks!");
+
+    try {
+        const { data: existingLike } = await supabase.from('likes').select('*').eq('user_id', user.id).eq('track_id', trackId).maybeSingle();
+        
+        if (existingLike) {
+            await supabase.from('likes').delete().eq('id', existingLike.id);
+            alert("Removed from liked tracks.");
+        } else {
+            await supabase.from('likes').insert({ user_id: user.id, track_id: trackId });
+            alert("Added to liked tracks!");
+        }
+    } catch (err) {
+        console.error("Like interaction error:", err.message);
+    }
+};
+
+window.toggleFollowArtist = async function(artistId, event) {
+    if (event) event.stopPropagation();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return alert("Please log in to follow artists!");
+
+    try {
+        const { data: existingFollow } = await supabase.from('follows').select('*').eq('user_id', user.id).eq('artist_id', artistId).maybeSingle();
+        
+        if (existingFollow) {
+            await supabase.from('follows').delete().eq('id', existingFollow.id);
+            alert("Unfollowed artist.");
+        } else {
+            await supabase.from('follows').insert({ user_id: user.id, artist_id: artistId });
+            alert("Following artist!");
+        }
+    } catch (err) {
+        console.error("Follow interaction error:", err.message);
+    }
+};
+
+window.createAdminPlaylist = async function(title) {
+    const role = await getUserRole();
+    if (role !== 'admin') return alert("Access Denied: Only Admins can build system playlists.");
+
+    const { data: { user } } = await supabase.auth.getUser();
+    try {
+        const { data, error } = await supabase.from('playlists').insert({
+            title: title,
+            created_by: user.id,
+            is_admin_curated: true
+        }).select().single();
+
+        if (error) throw error;
+        alert(`Playlist "${data.title}" successfully launched across NectarStream!`);
+        window.loadPage('studio');
+    } catch (err) {
+        alert("Curation fault: " + err.message);
+    }
+};
 
 // ==========================================================================
 // 5. TIMELINE CONTROLS & CONTINUOUS INITIALIZATION
@@ -230,7 +275,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const volumeSlider = document.getElementById('volume-slider');
 
     if (player && progressBar) {
-        // Sync progress timeline layout continuously during track advancement
         player.addEventListener('timeupdate', () => {
             if (player.duration) {
                 progressBar.value = (player.currentTime / player.duration) * 100;
@@ -238,25 +282,21 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // Set maximum duration metrics when metadata buffer streams load
         player.addEventListener('loadedmetadata', () => {
             if (totalDurationText) totalDurationText.textContent = formatTimelineStamp(player.duration);
         });
 
-        // Allow users to scrub through the progress bar manually
         progressBar.addEventListener('input', () => {
             if (player.duration) {
                 player.currentTime = (progressBar.value / 100) * player.duration;
             }
         });
 
-        // Track has ended -> auto skip to next available song
         player.addEventListener('ended', () => {
             window.nextSong();
         });
     }
 
-    // Active tracking for volume input changes
     if (volumeSlider && player) {
         volumeSlider.addEventListener('input', () => {
             player.volume = volumeSlider.value / 100;
@@ -269,7 +309,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Catch system authentication state updates natively to intercept login changes
     supabase.auth.onAuthStateChange((event, session) => {
         console.log(`Supabase Global Session Identity Event: [${event}]`);
         if (event === 'SIGNED_IN') {
@@ -279,7 +318,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Default entry loading routing on application initialization block
     window.loadPage('home');
 });
 

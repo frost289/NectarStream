@@ -31,7 +31,7 @@ export async function renderStudio() {
 // 1. SYSTEM ADMINISTRATOR / CURATOR VIEW
 // ==========================================================================
 async function renderAdminDashboard(container) {
-    // FIX: Grab both the ID and the artist_name column from profiles
+    // Grab both the ID and the artist_name column from profiles
     const { data: artists, error: artistErr } = await supabase
         .from('profiles')
         .select('id, artist_name')
@@ -47,6 +47,15 @@ async function renderAdminDashboard(container) {
             <h1 style="margin-bottom: 10px; color: #FF6600;">System Administrator Studio</h1>
             <p style="color: #b3b3b3; margin-bottom: 30px;">Curator mode: Provision tracks, upload files to storage, and manage playlists.</p>
             
+            <div style="background: #181818; padding: 25px; border-radius: 8px; border: 1px solid #282828; max-width: 600px; margin-bottom: 30px;">
+                <h3 style="margin-bottom: 10px;">🛡️ System Playlist Curator Engine</h3>
+                <p style="color: #b3b3b3; font-size: 13px; margin-bottom: 15px;">Launch promotional or thematic playlists globally accessible across NectarStream catalogs.</p>
+                <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                    <input type="text" id="new-playlist-title" placeholder="e.g., Chill Acoustic Loops, Malawi Electronic Fire" style="flex-grow: 1; min-width: 260px; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid #333; color: #fff; border-radius: 6px;">
+                    <button onclick="if(document.getElementById('new-playlist-title').value.trim()) { window.createAdminPlaylist(document.getElementById('new-playlist-title').value); document.getElementById('new-playlist-title').value=''; } else { alert('Enter a playlist name first!'); }" style="white-space: nowrap;">Deploy Playlist</button>
+                </div>
+            </div>
+
             <div style="background: #181818; padding: 25px; border-radius: 8px; border: 1px solid #282828; max-width: 600px; margin-bottom: 40px;">
                 <h3 style="margin-bottom: 20px;">Upload & Deploy New Track</h3>
                 <form id="upload-form" style="display: flex; flex-direction: column; gap: 15px;">
@@ -61,7 +70,6 @@ async function renderAdminDashboard(container) {
                         <select id="track-artist" required>
                             <option value="">-- Select an Artist Profile --</option>
                             ${artists.map(a => {
-                                // Fallback to truncated UUID string if the user hasn't set an artist name yet
                                 const nameDisplay = a.artist_name ? a.artist_name : `Unnamed Artist (${a.id.slice(0, 8)}...)`;
                                 return `<option value="${a.id}">${nameDisplay}</option>`;
                             }).join('')}
@@ -137,7 +145,7 @@ async function renderAdminDashboard(container) {
                 coverUrl = supabase.storage.from('covers').getPublicUrl(filePath).data.publicUrl;
             }
 
-            // 3. Insert metadata records into your main songs data table
+            // 3. Insert metadata records into main songs table
             const { error: dbErr } = await supabase.from('songs').insert([{
                 title: title,
                 artist_id: artistId,
@@ -198,7 +206,7 @@ async function loadAdminInventory() {
                         <td style="font-weight:bold; color:#fff;">${song.title}</td>
                         <td style="font-size:13px; color:#b3b3b3; font-family:monospace;">${song.artist_id}</td>
                         <td><span style="background:#222; padding:4px 10px; border-radius:12px; color:#FF6600;">${song.plays || 0} plays</span></td>
-                        <td>${song.is_featured ? '⭐ Featured' : '<span style="color:#444;">Standard</span>'}</td>
+                        <td>${song.is_featured ? 'Featured' : '<span style="color:#444;">Standard</span>'}</td>
                     </tr>
                 `).join('')}
             </tbody>
@@ -213,7 +221,7 @@ async function renderArtistDashboard(container) {
     const { data: { session } } = await supabase.auth.getSession();
     const artistId = session.user.id;
 
-    // Parallel fetch: Look up both track analytics history and profile customization metrics
+    // Parallel fetch: Look up track analytics and profile credentials
     const [songsResponse, profileResponse] = await Promise.all([
         supabase.from('songs').select('*').eq('artist_id', artistId).order('plays', { ascending: false }),
         supabase.from('profiles').select('artist_name').eq('id', artistId).maybeSingle()
@@ -283,7 +291,6 @@ async function renderArtistDashboard(container) {
         </div>
     `;
 
-    // Bind execution listeners thread for the newly embedded artist configuration form
     document.getElementById('artist-profile-form').onsubmit = async (e) => {
         e.preventDefault();
         const saveBtn = document.getElementById('profile-save-btn');
