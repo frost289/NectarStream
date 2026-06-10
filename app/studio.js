@@ -1,6 +1,9 @@
 import { supabase } from '../lib/supabaseClient.js';
 import { getUserRole } from './auth.js';
 
+/**
+ * Main rendering router endpoint for the NectarStream Studio Dashboard
+ */
 export async function renderStudio() {
     const container = document.getElementById('app-container');
     container.innerHTML = `<p style="color: #b3b3b3;">Verifying dashboard credentials...</p>`;
@@ -24,10 +27,14 @@ export async function renderStudio() {
     }
 }
 
+// ==========================================================================
+// 1. SYSTEM ADMINISTRATOR / CURATOR VIEW
+// ==========================================================================
 async function renderAdminDashboard(container) {
+    // FIX: Grab both the ID and the artist_name column from profiles
     const { data: artists, error: artistErr } = await supabase
         .from('profiles')
-        .select('id')
+        .select('id, artist_name')
         .eq('role', 'artist');
 
     if (artistErr) {
@@ -53,7 +60,11 @@ async function renderAdminDashboard(container) {
                         <label style="display:block; margin-bottom: 5px; color:#b3b3b3;">Assign to Creator Profile</label>
                         <select id="track-artist" required>
                             <option value="">-- Select an Artist Profile --</option>
-                            ${artists.map(a => `<option value="${a.id}">${a.id}</option>`).join('')}
+                            ${artists.map(a => {
+                                // Fallback to truncated UUID string if the user hasn't set an artist name yet
+                                const nameDisplay = a.artist_name ? a.artist_name : `Unnamed Artist (${a.id.slice(0, 8)}...)`;
+                                return `<option value="${a.id}">${nameDisplay}</option>`;
+                            }).join('')}
                         </select>
                     </div>
 
@@ -109,8 +120,6 @@ async function renderAdminDashboard(container) {
                     .upload(filePath, audioFile);
 
                 if (uploadAudioErr) throw new Error("Audio upload error: " + uploadAudioErr.message);
-
-                // Get Public URL
                 audioUrl = supabase.storage.from('songs').getPublicUrl(filePath).data.publicUrl;
             }
 
@@ -125,8 +134,6 @@ async function renderAdminDashboard(container) {
                     .upload(filePath, coverFile);
 
                 if (uploadCoverErr) throw new Error("Cover image upload error: " + uploadCoverErr.message);
-
-                // Get Public URL
                 coverUrl = supabase.storage.from('covers').getPublicUrl(filePath).data.publicUrl;
             }
 
@@ -199,20 +206,26 @@ async function loadAdminInventory() {
     `;
 }
 
+// ==========================================================================
+// 2. ARTIST DASHBOARD & PROFILE SETUP VIEW
+// ==========================================================================
 async function renderArtistDashboard(container) {
     const { data: { session } } = await supabase.auth.getSession();
     const artistId = session.user.id;
 
-    const { data: mySongs, error } = await supabase
-        .from('songs')
-        .select('*')
-        .eq('artist_id', artistId)
-        .order('plays', { ascending: false });
+    // Parallel fetch: Look up both track analytics history and profile customization metrics
+    const [songsResponse, profileResponse] = await Promise.all([
+        supabase.from('songs').select('*').eq('artist_id', artistId).order('plays', { ascending: false }),
+        supabase.from('profiles').select('artist_name').eq('id', artistId).maybeSingle()
+    ]);
 
-    if (error) {
-        container.innerHTML = `<p style="color:red;">Analytics compiler sync error: ${error.message}</p>`;
+    if (songsResponse.error) {
+        container.innerHTML = `<p style="color:red;">Analytics compiler sync error: ${songsResponse.error.message}</p>`;
         return;
     }
+
+    const mySongs = songsResponse.data;
+    const currentArtistName = profileResponse.data?.artist_name || '';
 
     const totalPlays = mySongs.reduce((acc, current) => acc + (current.plays || 0), 0);
     const topTrack = mySongs[0]?.title || "No tracks released yet";
@@ -231,6 +244,20 @@ async function renderArtistDashboard(container) {
                     <small style="color:#b3b3b3; text-transform:uppercase; font-size:11px;">Highest Performing Track</small>
                     <h2 style="font-size:20px; color:#FFF; margin-top:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${topTrack}</h2>
                 </div>
+            </div>
+
+            <div style="background: #181818; padding: 25px; border-radius: 8px; border: 1px solid #282828; max-width: 600px; margin-bottom: 40px;">
+                <h3 style="margin-bottom: 10px;">Identity Settings</h3>
+                <p style="color: #b3b3b3; font-size: 13px; margin-bottom: 20px;">Your stage name determines how administrators locate and credit your music catalog rows.</p>
+                
+                <form id="artist-profile-form" style="display: flex; flex-direction: column; gap: 15px;">
+                    <div>
+                        <label style="display:block; margin-bottom: 5px; color:#b3b3b3;">Stage Name / Creator Alias</label>
+                        <input type="text" id="artist-name-input" required value="${currentArtistName}" placeholder="e.g., DJ Nectar, Lil Symphony">
+                    </div>
+                    
+                    <button type="submit" id="profile-save-btn" style="width: 100%;">Save Identity Profile</button>
+                </form>
             </div>
 
             <h3 style="margin-bottom:15px;">Your Complete Catalog Engagement Matrix</h3>
@@ -255,4 +282,31 @@ async function renderArtistDashboard(container) {
             </table>
         </div>
     `;
+
+    // Bind execution listeners thread for the newly embedded artist configuration form
+    document.getElementById('artist-profile-form').onsubmit = async (e) => {
+        e.preventDefault();
+        const saveBtn = document.getElementById('profile-save-btn');
+        const newName = document.getElementById('artist-name-input').value.trim();
+
+        saveBtn.disabled = true;
+        saveBtn.innerText = "Saving Profile...";
+
+        try {
+            const { error } = await supabase
+                .from('profiles')
+                .update({ artist_name: newName })
+                .eq('id', artistId);
+
+            if (error) throw error;
+
+            alert("Stage name updated successfully! Administrators can now identify your releases.");
+        } catch (err) {
+            console.error("Profile settings exception:", err.message);
+            alert("Failed to sync profile change: " + err.message);
+        } finally {
+            saveBtn.disabled = false;
+            saveBtn.innerText = "Save Identity Profile";
+        }
+    };
 }

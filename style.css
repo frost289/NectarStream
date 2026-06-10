@@ -35,7 +35,6 @@ body {
 /* ==========================================================================
    2. APP LAYOUT STRUCTURE
    ========================================================================== */
-/* Main wrapper assuming a layout with a permanent sidebar */
 #app-layout {
     display: flex;
     width: 100%;
@@ -153,7 +152,6 @@ h2 {
     letter-spacing: -0.5px;
 }
 
-/* Flex/Grid dashboard sections */
 .grid {
     display: flex;
     flex-direction: row;
@@ -168,7 +166,6 @@ h2 {
     scroll-snap-align: start;
 }
 
-/* Elegant Music Card layout */
 .card {
     background-color: rgba(24, 24, 24, 0.8);
     padding: 0;
@@ -191,7 +188,6 @@ h2 {
     border-color: rgba(255, 102, 0, 0.3);
 }
 
-/* Prevents massive broken images from throwing off card scaling */
 .card img {
     width: 100%;
     aspect-ratio: 1 / 1;
@@ -276,7 +272,6 @@ input:focus, select:focus {
     box-shadow: 0 0 8px rgba(255, 102, 0, 0.2);
 }
 
-/* Global Button Designs */
 button, button[type="submit"] {
     background-color: var(--primary);
     color: white;
@@ -351,95 +346,102 @@ button:disabled {
 }
 
 /* ==========================================================================
-   6. GLOBAL MEDIA PERSISTENT FOOTER PLAYER
+   6. GLOBAL MEDIA PERSISTENT FOOTER PLAYER (Spotify Upgrade Module)
    ========================================================================== */
 .player-bar {
     position: fixed;
     bottom: 0;
     left: 0;
     width: 100vw;
-    height: 100px;
+    height: 90px;
     background: linear-gradient(to top, #0a0a0a, #181818);
-    border-top: 1px solid rgba(255, 102, 0, 0.1);
+    border-top: 1px solid rgba(255, 102, 0, 0.15);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 12px 32px;
+    padding: 0 32px;
     z-index: 9999;
-    gap: 32px;
+    box-sizing: border-box;
+    gap: 20px;
 }
 
-.song-info {
-    flex: 0.2;
-    font-size: 14px;
-    color: var(--text-muted);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-#current-song {
-    color: var(--text-main);
-    font-weight: 600;
-}
-
-.progress-container {
-    flex: 1;
+/* Flexible Axis Subsections */
+.player-left {
+    width: 30%;
     display: flex;
     align-items: center;
-    gap: 12px;
+    overflow: hidden;
 }
 
-#progress-bar {
-    width: 100%;
-    height: 5px;
-    appearance: none;
-    -webkit-appearance: none;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 4px;
-    outline: none;
-    cursor: pointer;
+.player-center {
+    width: 40%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
 }
 
-#progress-bar::-webkit-slider-thumb {
-    appearance: none;
-    -webkit-appearance: none;
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    background: var(--primary);
-    cursor: pointer;
-    box-shadow: 0 2px 8px rgba(255, 102, 0, 0.4);
-}
-
-#progress-bar::-moz-range-thumb {
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    background: var(--primary);
-    cursor: pointer;
-    border: none;
-    box-shadow: 0 2px 8px rgba(255, 102, 0, 0.4);
-}
-
-.controls {
-    flex: 0.2;
+.player-right {
+    width: 30%;
     display: flex;
     align-items: center;
     justify-content: flex-end;
+}
+
+/* Track Metadata Branding Elements */
+.player-cover-art {
+    width: 56px;
+    height: 56px;
+    border-radius: 6px;
+    object-fit: cover;
+    margin-right: 14px;
+    background-color: #1a1a1a;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    flex-shrink: 0;
+}
+
+.player-track-metadata {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.track-title {
+    color: var(--text-main);
+    font-size: 14px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.track-artist {
+    color: var(--text-muted);
+    font-size: 12px;
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Precision Controls Deck */
+.controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     gap: 16px;
 }
 
 .controls button {
-    width: 44px;
-    height: 44px;
+    width: 38px;
+    height: 38px;
     padding: 0;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 18px;
-    background-color: rgba(255, 102, 0, 0.2);
+    font-size: 15px;
+    background-color: rgba(255, 102, 0, 0.15);
     color: var(--primary);
     transition: all 0.2s ease;
 }
@@ -452,15 +454,85 @@ button:disabled {
 }
 
 #play-pause-btn {
-    width: 52px !important;
-    height: 52px !important;
-    font-size: 24px;
+    width: 46px !important;
+    height: 46px !important;
+    font-size: 20px;
     background-color: var(--primary) !important;
     color: white !important;
 }
 
+/* Timeline Components */
+.progress-container {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
 
-/* Container to group the image and the overlay play switch safely */
+.time-stamp {
+    color: var(--text-muted);
+    font-size: 11px;
+    min-width: 32px;
+    text-align: center;
+}
+
+#progress-bar {
+    flex-grow: 1;
+    height: 4px;
+    appearance: none;
+    -webkit-appearance: none;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    outline: none;
+    cursor: pointer;
+}
+
+#progress-bar::-webkit-slider-thumb {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--primary);
+    cursor: pointer;
+}
+
+/* Utilities Mixer Panel */
+.volume-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 130px;
+}
+
+#volume-icon {
+    font-size: 15px;
+    color: var(--text-muted);
+    user-select: none;
+}
+
+#volume-slider {
+    width: 100%;
+    height: 4px;
+    appearance: none;
+    -webkit-appearance: none;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    outline: none;
+    cursor: pointer;
+}
+
+#volume-slider::-webkit-slider-thumb {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--primary);
+    cursor: pointer;
+}
+
+/* Card-Img-Container Configurations */
 .card-img-container {
     position: relative;
     width: 100%;
@@ -477,7 +549,6 @@ button:disabled {
     transition: filter 0.3s ease;
 }
 
-/* Hidden visual state by default */
 .play-hover-btn {
     position: absolute;
     bottom: 12px;
@@ -501,7 +572,6 @@ button:disabled {
     cursor: pointer;
 }
 
-/* Trigger actions when user targets the card wrapper block */
 .card:hover .play-hover-btn {
     opacity: 1;
     transform: translateY(0) scale(1);
@@ -517,7 +587,7 @@ button:disabled {
 }
 
 /* ==========================================================================
-   7. SCROLLBAR STYLING & MISC ENHANCEMENTS
+   7. SCROLLBAR STYLING & RESPONSIVE BREAKPOINTS
    ========================================================================== */
 ::-webkit-scrollbar {
     width: 10px;
@@ -537,7 +607,6 @@ button:disabled {
     background: rgba(255, 102, 0, 0.7);
 }
 
-/* Form group spacing */
 form div {
     margin-bottom: 20px;
 }
@@ -550,7 +619,6 @@ form label {
     color: var(--text-main);
 }
 
-/* Search input styling */
 input[type="search"],
 input[type="text"][placeholder*="search" i] {
     width: 100%;
@@ -570,7 +638,6 @@ input[type="text"][placeholder*="search" i]:focus {
     box-shadow: 0 0 12px rgba(255, 102, 0, 0.15);
 }
 
-/* Section containers */
 .section {
     margin-bottom: 40px;
 }
@@ -582,7 +649,6 @@ input[type="text"][placeholder*="search" i]:focus {
     color: var(--text-main);
 }
 
-/* Responsive layout for tablets and phones */
 @media (max-width: 1024px) {
     .sidebar {
         width: 100%;
@@ -664,9 +730,7 @@ input[type="text"][placeholder*="search" i]:focus {
     #app-container {
         padding-top: 120px;
     }
-}
 
-@media (max-width: 768px) {
     #app-layout {
         flex-direction: column;
     }
@@ -738,8 +802,19 @@ input[type="text"][placeholder*="search" i]:focus {
         width: 100%;
         height: auto;
         padding: 16px;
-        flex-wrap: wrap;
-        gap: 16px;
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .player-left, .player-center, .player-right {
+        width: 100%;
+        justify-content: center;
+        text-align: center;
+    }
+
+    .volume-container {
+        width: 100%;
+        max-width: 200px;
     }
 
     .song-info {
@@ -749,7 +824,7 @@ input[type="text"][placeholder*="search" i]:focus {
 
     .controls {
         flex: 1 1 100%;
-        justify-content: space-between;
+        justify-content: center;
     }
 
     #progress-bar {
@@ -762,7 +837,6 @@ input[type="text"][placeholder*="search" i]:focus {
     }
 }
 
-/* Link styling */
 a {
     color: var(--primary);
     text-decoration: none;

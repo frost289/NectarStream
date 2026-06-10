@@ -90,23 +90,20 @@ window.logout = async function() {
 };
 
 // ==========================================================================
-// 4. MUSIC STREAMING PERSISTENT CONTROLLER
+// 4. MUSIC STREAMING PERSISTENT CONTROLLER (Enhanced Metadata Scraper)
 // ==========================================================================
 window.playSong = async function(audioUrl, title, songId = null) {
     const player = document.getElementById('global-audio-player');
-    const songLabel = document.getElementById('current-song');
-    const playPauseBtn = document.getElementById('play-pause-btn');
-
-    if (!player || !songLabel) return;
+    if (!player) return;
 
     try {
         // Set audio stream sources and metadata values
         player.src = audioUrl;
-        songLabel.innerText = title;
         player.load();
         
         // Execute dynamic non-blocking play audio thread
         await player.play();
+        const playPauseBtn = document.getElementById('play-pause-btn');
         if (playPauseBtn) playPauseBtn.innerText = "⏸";
 
         // Register background stream view analytics loop asynchronously
@@ -116,10 +113,14 @@ window.playSong = async function(audioUrl, title, songId = null) {
 
         // Build a backup runtime context queue from elements present on the page layout
         syncQueueFromDom(audioUrl);
+        
+        // Update Media Bar Visual Deck Metadata Context Labels
+        updatePlayerMetadataLayout(audioUrl, title);
 
     } catch (err) {
         console.error("Audio core configuration failure:", err);
-        songLabel.innerText = "Playback error occurred";
+        const songLabel = document.getElementById('current-song');
+        if (songLabel) songLabel.innerText = "Playback error occurred";
     }
 };
 
@@ -177,20 +178,69 @@ function syncQueueFromDom(activeUrl) {
     });
 }
 
+/**
+ * Automatically targets rendering song nodes from dashboard cards to pull metadata 
+ */
+function updatePlayerMetadataLayout(audioUrl, title) {
+    const songLabel = document.getElementById('current-song');
+    const artistLabel = document.getElementById('player-artist');
+    const coverImg = document.getElementById('player-cover');
+    
+    if (songLabel) songLabel.innerText = title;
+    
+    // Look up active card matching target stream to scrap layout profiles
+    const cards = document.querySelectorAll('.card');
+    let foundMatch = false;
+    
+    cards.forEach(card => {
+        const clickAttr = card.getAttribute('onclick') || '';
+        if (clickAttr.includes(audioUrl)) {
+            const imgEl = card.querySelector('img');
+            const artistEl = card.querySelector('small');
+            
+            if (imgEl && coverImg) coverImg.src = imgEl.src;
+            if (artistEl && artistLabel) artistLabel.innerText = artistEl.innerText;
+            foundMatch = true;
+        }
+    });
+    
+    // Fallback layouts if song is triggered without a matching grid container item
+    if (!foundMatch) {
+        if (coverImg) coverImg.src = 'https://via.placeholder.com/56';
+        if (artistLabel) artistLabel.innerText = 'Unknown Artist';
+    }
+}
+
+// Helper tracking converter to transform stream runtime frames to human-readable text
+function formatTimelineStamp(seconds) {
+    if (isNaN(seconds)) return "0:00";
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+}
+
 // ==========================================================================
 // 5. TIMELINE CONTROLS & CONTINUOUS INITIALIZATION
 // ==========================================================================
 document.addEventListener('DOMContentLoaded', () => {
     const player = document.getElementById('global-audio-player');
     const progressBar = document.getElementById('progress-bar');
-    const playPauseBtn = document.getElementById('play-pause-btn');
+    const currentTimeText = document.getElementById('current-time');
+    const totalDurationText = document.getElementById('total-duration');
+    const volumeSlider = document.getElementById('volume-slider');
 
     if (player && progressBar) {
         // Sync progress timeline layout continuously during track advancement
         player.addEventListener('timeupdate', () => {
             if (player.duration) {
                 progressBar.value = (player.currentTime / player.duration) * 100;
+                if (currentTimeText) currentTimeText.textContent = formatTimelineStamp(player.currentTime);
             }
+        });
+
+        // Set maximum duration metrics when metadata buffer streams load
+        player.addEventListener('loadedmetadata', () => {
+            if (totalDurationText) totalDurationText.textContent = formatTimelineStamp(player.duration);
         });
 
         // Allow users to scrub through the progress bar manually
@@ -203,6 +253,19 @@ document.addEventListener('DOMContentLoaded', () => {
         // Track has ended -> auto skip to next available song
         player.addEventListener('ended', () => {
             window.nextSong();
+        });
+    }
+
+    // Active tracking for volume input changes
+    if (volumeSlider && player) {
+        volumeSlider.addEventListener('input', () => {
+            player.volume = volumeSlider.value / 100;
+            const volumeIcon = document.getElementById('volume-icon');
+            if (volumeIcon) {
+                if (player.volume === 0) volumeIcon.innerText = "🔇";
+                else if (player.volume < 0.5) volumeIcon.innerText = "🔉";
+                else volumeIcon.innerText = "🔊";
+            }
         });
     }
 
