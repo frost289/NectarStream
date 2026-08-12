@@ -1,66 +1,13 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>NectarStream</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-
-    <nav class="sidebar" aria-label="Main navigation">
-        <div class="sidebar-top-row">
-            <div class="logo">NectarStream</div>
-            <button id="mobile-menu-toggle" class="mobile-menu-toggle" aria-label="Open navigation menu" onclick="toggleMobileMenu()">
-                <span>☰</span>
-            </button>
-        </div>
-        <ul class="sidebar-menu">
-            <li onclick="loadPage('home')">Home</li>
-            <li onclick="loadPage('search')">Search</li>
-            <li onclick="loadPage('library')">Library</li>
-            <li onclick="loadPage('literature')">Literature</li>
-            <li onclick="loadPage('studio')">Studio</li>
-            <li onclick="loadPage('login')" style="margin-top: 20px; color: #FF6600;">Login</li>
-            <li onclick="logout()" style="color: #d0021b;">Logout</li>
-        </ul>
-    </nav>
-
-    <main id="app-container">
-        <h1>Loading...</h1>
-    </main>
-
-    <footer class="player-bar">
-        <div class="player-left">
-            <img src="https://via.placeholder.com/56" alt="Cover Art" id="player-cover" class="player-cover-art">
-            <div class="player-track-metadata">
-                <div class="track-title" id="current-song">No song playing</div>
-                <div class="track-artist" id="player-artist">Unknown Artist</div>
-            </div>
-        </div>
-        
-        <div class="player-center">
-            <div class="controls">
-                <button onclick="prevSong()">⏮</button>
-                <button id="play-pause-btn" onclick="togglePlay()">▶</button>
-                <button onclick="nextSong()">⏭</button>
-            </div>
-            <div class="progress-container">
-                <span class="time-stamp" id="current-time">0:00</span>
-                <input type="range" id="progress-bar" value="0" max="100">
-                <span class="time-stamp" id="total-duration">0:00</span>
-            </div>
-        </div>
-
-        <div class="player-right">
-            <div class="volume-container">
-                <span id="volume-icon">🔊</span>
-                <input type="range" id="volume-slider" min="0" max="100" value="100">
-            </div>
-        </div>
-
-        <audio id="global-audio-player"></audio>
-    </footer>
-
-    <script type="module" src="main.js"></script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>chipetaproj</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
 </html>
