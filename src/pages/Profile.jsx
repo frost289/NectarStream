@@ -1,43 +1,49 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { signOut } from "firebase/auth";
-import { Pencil } from "lucide-react";
+import { Pencil, UserCog } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import { useTracks } from "../context/TracksContext";
 import { auth } from "../firebase";
-import { getUserTracks } from "../lib/tracks";
+import { getUserById } from "../lib/users";
 import EditTrackSheet from "../components/EditTrackSheet";
+import EditProfileSheet from "../components/EditProfileSheet";
 
 export default function Profile() {
   const { user } = useAuth();
+  const { tracks: allTracks, loading } = useTracks();
   const navigate = useNavigate();
-  const [tracks, setTracks] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [profile, setProfile] = useState(null);
   const [editingTrack, setEditingTrack] = useState(null);
+  const [editingProfile, setEditingProfile] = useState(false);
 
-  const loadTracks = () => {
+  const loadProfile = () => {
     if (!user) return;
-    getUserTracks(user.uid).then((data) => {
-      setTracks(data);
-      setLoading(false);
-    });
+    getUserById(user.uid).then(setProfile);
   };
 
-  useEffect(loadTracks, [user]);
+  useEffect(loadProfile, [user]);
 
+  const tracks = allTracks.filter((t) => t.artistId === user?.uid);
   const totalStreams = tracks.reduce((sum, t) => sum + (t.plays || 0), 0);
+
   const handleLogout = async () => {
     await signOut(auth);
     navigate("/login");
   };
 
+  if (!profile) return <div className="p-4 pt-6 text-muted">Loading...</div>;
+
   return (
     <div className="p-4 pt-6 flex flex-col gap-6">
       <div className="flex items-center gap-4">
-        <img src={user?.photoURL} alt="" className="w-16 h-16 rounded-full ring-2 ring-wave-orange/40" />
-        <div>
-          <p className="text-lg font-semibold text-ink">{user?.displayName}</p>
-          <p className="text-sm text-muted">{user?.email}</p>
+        <img src={profile.photoURL} alt="" className="w-16 h-16 rounded-full ring-2 ring-wave-orange/40 object-cover" />
+        <div className="flex-1 min-w-0">
+          <p className="text-lg font-semibold text-ink">{profile.displayName}</p>
+          <p className="text-sm text-muted">{profile.email}</p>
+          {profile.bio && <p className="text-sm text-muted mt-1">{profile.bio}</p>}
         </div>
+        <button onClick={() => setEditingProfile(true)} className="text-muted"><UserCog size={20} /></button>
       </div>
 
       <div className="bg-panel border border-line rounded-xl p-4 text-sm text-muted">
@@ -80,7 +86,10 @@ export default function Profile() {
       <button onClick={handleLogout} className="border border-line text-ink rounded-full py-3.5">Log Out</button>
 
       {editingTrack && (
-        <EditTrackSheet track={editingTrack} onClose={() => setEditingTrack(null)} onSaved={() => { setEditingTrack(null); loadTracks(); }} onDeleted={() => { setEditingTrack(null); loadTracks(); }} />
+        <EditTrackSheet track={editingTrack} onClose={() => setEditingTrack(null)} onSaved={() => setEditingTrack(null)} onDeleted={() => setEditingTrack(null)} />
+      )}
+      {editingProfile && (
+        <EditProfileSheet profile={profile} onClose={() => setEditingProfile(false)} onSaved={() => { setEditingProfile(false); loadProfile(); }} />
       )}
     </div>
   );

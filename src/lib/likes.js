@@ -31,10 +31,8 @@ export async function toggleLike(user, track) {
   }
 }
 
-export async function getUserLikedTracks(userId) {
+export async function getUserLikedTrackIds(userId) {
   const q = query(collection(db, "likes"), where("userId", "==", userId));
   const snap = await getDocs(q);
-  const trackIds = snap.docs.map((d) => d.data().trackId);
-  const trackDocs = await Promise.all(trackIds.map((id) => getDoc(doc(db, "tracks", id))));
-  return trackDocs.filter((d) => d.exists()).map((d) => ({ id: d.id, ...d.data() }));
+  return snap.docs.map((d) => d.data().trackId);
 }

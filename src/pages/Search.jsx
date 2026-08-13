@@ -1,22 +1,14 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Search as SearchIcon } from "lucide-react";
-import { getAllTracks } from "../lib/tracks";
+import { useTracks } from "../context/TracksContext";
 import TrackCard from "../components/TrackCard";
 
 const GENRES = ["All", "Afrobeats", "Hip Hop", "Amapiano", "R&B", "Deep House"];
 
 export default function Search() {
-  const [tracks, setTracks] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { tracks, loading } = useTracks();
   const [query, setQuery] = useState("");
   const [activeGenre, setActiveGenre] = useState("All");
-
-  useEffect(() => {
-    getAllTracks().then((data) => {
-      setTracks(data);
-      setLoading(false);
-    });
-  }, []);
 
   const filtered = tracks.filter((track) => {
     const matchesQuery = query.trim() === "" || track.title?.toLowerCase().includes(query.toLowerCase()) || track.artistName?.toLowerCase().includes(query.toLowerCase());
@@ -30,24 +22,14 @@ export default function Search() {
 
       <div className="relative mb-4">
         <SearchIcon size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted" />
-        <input
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Artists, songs, or genres"
-          className="w-full bg-panel border border-line rounded-full py-3 pl-11 pr-4 text-ink placeholder:text-muted focus:outline-none focus:border-wave-cyan"
-        />
+        <input type="text" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Artists, songs, or genres"
+          className="w-full bg-panel border border-line rounded-full py-3 pl-11 pr-4 text-ink placeholder:text-muted focus:outline-none focus:border-wave-cyan" />
       </div>
 
       <div className="flex gap-2 overflow-x-auto pb-4 mb-2 -mx-4 px-4">
         {GENRES.map((genre) => (
-          <button
-            key={genre}
-            onClick={() => setActiveGenre(genre)}
-            className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition ${
-              activeGenre === genre ? "bg-gradient-to-r from-wave-cyan to-wave-orange text-night" : "bg-panel text-muted border border-line"
-            }`}
-          >
+          <button key={genre} onClick={() => setActiveGenre(genre)}
+            className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition ${activeGenre === genre ? "bg-gradient-to-r from-wave-cyan to-wave-orange text-night" : "bg-panel text-muted border border-line"}`}>
             {genre}
           </button>
         ))}
@@ -57,7 +39,7 @@ export default function Search() {
       {!loading && filtered.length === 0 && <p className="text-muted">No tracks match your search.</p>}
 
       <div className="flex flex-col gap-2">
-        {filtered.map((track) => <TrackCard key={track.id} track={track} />)}
+        {filtered.map((track) => <TrackCard key={track.id} track={track} queue={filtered} />)}
       </div>
     </div>
   );

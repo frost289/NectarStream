@@ -1,20 +1,21 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import { getUserLikedTracks } from "../lib/likes";
+import { useTracks } from "../context/TracksContext";
+import { getUserLikedTrackIds } from "../lib/likes";
 import TrackCard from "../components/TrackCard";
 
 export default function Library() {
   const { user } = useAuth();
-  const [tracks, setTracks] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { tracks: allTracks, loading: tracksLoading } = useTracks();
+  const [likedIds, setLikedIds] = useState(null);
 
   useEffect(() => {
     if (!user) return;
-    getUserLikedTracks(user.uid).then((data) => {
-      setTracks(data);
-      setLoading(false);
-    });
+    getUserLikedTrackIds(user.uid).then(setLikedIds);
   }, [user]);
+
+  const loading = tracksLoading || likedIds === null;
+  const tracks = likedIds ? allTracks.filter((t) => likedIds.includes(t.id)) : [];
 
   return (
     <div className="p-4 pt-6">
@@ -22,7 +23,7 @@ export default function Library() {
       {loading && <p className="text-muted">Loading...</p>}
       {!loading && tracks.length === 0 && <p className="text-muted">Tracks you like will show up here.</p>}
       <div className="flex flex-col gap-2">
-        {tracks.map((track) => <TrackCard key={track.id} track={track} />)}
+        {tracks.map((track) => <TrackCard key={track.id} track={track} queue={tracks} />)}
       </div>
     </div>
   );

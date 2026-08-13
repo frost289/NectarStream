@@ -3,6 +3,7 @@ import { ChevronDown, Play, Pause, SkipBack, SkipForward, Shuffle, Repeat, Repea
 import { usePlayer } from "../context/PlayerContext";
 import { useAuth } from "../context/AuthContext";
 import { isTrackLiked, toggleLike } from "../lib/likes";
+import { isFollowing, toggleFollow } from "../lib/follows";
 import CommentSheet from "./CommentSheet";
 import QueueSheet from "./QueueSheet";
 
@@ -14,17 +15,18 @@ function formatTime(seconds) {
 }
 
 export default function NowPlaying() {
-  const {
-    currentTrack, isPlaying, isExpanded, setIsExpanded, progress, duration,
-    togglePlay, seekTo, goToNext, goToPrevious, shuffleOn, toggleShuffle, repeatMode, cycleRepeat,
-  } = usePlayer();
+  const { currentTrack, isPlaying, isExpanded, setIsExpanded, progress, duration, togglePlay, seekTo, goToNext, goToPrevious, shuffleOn, toggleShuffle, repeatMode, cycleRepeat } = usePlayer();
   const { user } = useAuth();
   const [liked, setLiked] = useState(false);
+  const [followingArtist, setFollowingArtist] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [showQueue, setShowQueue] = useState(false);
 
   useEffect(() => {
-    if (user && currentTrack) isTrackLiked(user.uid, currentTrack.id).then(setLiked);
+    if (user && currentTrack) {
+      isTrackLiked(user.uid, currentTrack.id).then(setLiked);
+      isFollowing(user.uid, currentTrack.artistId).then(setFollowingArtist);
+    }
   }, [user, currentTrack]);
 
   if (!isExpanded || !currentTrack) return null;
@@ -32,6 +34,10 @@ export default function NowPlaying() {
   const pct = duration ? (progress / duration) * 100 : 0;
   const handleSeek = (e) => seekTo((e.target.value / 100) * duration);
   const handleLike = async () => { if (user) setLiked(await toggleLike(user, currentTrack)); };
+  const handleFollow = async () => {
+    if (!user) return;
+    setFollowingArtist(await toggleFollow(user, currentTrack.artistId, currentTrack.artistName));
+  };
   const handleDownload = () => {
     const link = document.createElement("a");
     link.href = currentTrack.audioUrl;
@@ -48,6 +54,7 @@ export default function NowPlaying() {
   };
 
   const RepeatIcon = repeatMode === "one" ? Repeat1 : Repeat;
+  const isSelfArtist = user?.uid === currentTrack.artistId;
 
   return (
     <div className="fixed inset-0 bg-gradient-to-b from-panel to-night z-50 flex flex-col p-5 overflow-y-auto">
@@ -59,7 +66,7 @@ export default function NowPlaying() {
 
       <img src={currentTrack.coverUrl} alt="" className="w-full aspect-square rounded-2xl object-cover mb-8 shadow-2xl" />
 
-      <div className="flex items-start justify-between mb-6">
+      <div className="flex items-start justify-between mb-4">
         <div className="min-w-0">
           <h2 className="text-2xl font-bold text-ink truncate">{currentTrack.title}</h2>
           <p className="text-muted truncate">{currentTrack.artistName}</p>
@@ -70,7 +77,13 @@ export default function NowPlaying() {
         </div>
       </div>
 
-      <div className="relative h-1.5 w-full mb-2">
+      {user && !isSelfArtist && (
+        <button onClick={handleFollow} className={`self-start text-xs font-semibold rounded-full px-3 py-1.5 mb-6 ${followingArtist ? "border border-line text-ink" : "bg-gradient-to-r from-wave-cyan to-wave-orange text-night"}`}>
+          {followingArtist ? "Following" : "Follow Artist"}
+        </button>
+      )}
+
+      <div className="relative h-1.5 w-full mb-2 mt-2">
         <div className="absolute inset-0 rounded-full bg-line" />
         <div className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-wave-cyan to-wave-orange" style={{ width: `${pct}%` }} />
         <div className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-ink shadow -ml-1.5 pointer-events-none" style={{ left: `${pct}%` }} />

@@ -1,7 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
-import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
+import { getFirestore, doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -28,6 +27,7 @@ export async function ensureUserProfile(user) {
       displayName: user.displayName,
       email: user.email,
       photoURL: user.photoURL,
+      bio: "",
       role: "listener",
       createdAt: serverTimestamp(),
     });

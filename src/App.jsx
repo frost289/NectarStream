@@ -3,6 +3,7 @@ import BottomNav from "./components/BottomNav";
 import MiniPlayer from "./components/MiniPlayer";
 import NowPlaying from "./components/NowPlaying";
 import ProtectedRoute from "./components/ProtectedRoute";
+import AmbientBackground from "./components/AmbientBackground";
 import Home from "./pages/Home";
 import Search from "./pages/Search";
 import Library from "./pages/Library";
@@ -15,17 +16,20 @@ import Notifications from "./pages/Notifications";
 export default function App() {
   return (
     <BrowserRouter>
-      <div className="min-h-screen bg-night text-ink pb-32">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/search" element={<Search />} />
-          <Route path="/library" element={<ProtectedRoute><Library /></ProtectedRoute>} />
-          <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-          <Route path="/studio" element={<ProtectedRoute><Studio /></ProtectedRoute>} />
-          <Route path="/artist/:id" element={<ArtistProfile />} />
-          <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
-          <Route path="/login" element={<Login />} />
-        </Routes>
+      <div className="min-h-screen bg-night text-ink pb-32 relative">
+        <AmbientBackground />
+        <div className="relative z-10">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/search" element={<Search />} />
+            <Route path="/library" element={<ProtectedRoute><Library /></ProtectedRoute>} />
+            <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+            <Route path="/studio" element={<ProtectedRoute><Studio /></ProtectedRoute>} />
+            <Route path="/artist/:id" element={<ArtistProfile />} />
+            <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
+            <Route path="/login" element={<Login />} />
+          </Routes>
+        </div>
         <MiniPlayer />
         <NowPlaying />
         <BottomNav />
