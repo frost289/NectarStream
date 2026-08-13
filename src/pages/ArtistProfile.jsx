@@ -37,33 +37,33 @@ export default function ArtistProfile() {
     setFollowerCount((c) => (nowFollowing ? c + 1 : c - 1));
   };
 
-  if (loading) return <div className="p-4 text-slate-400">Loading...</div>;
-  if (!artist) return <div className="p-4 text-slate-400">Artist not found.</div>;
+  if (loading) return <div className="p-4 pt-6 text-muted">Loading...</div>;
+  if (!artist) return <div className="p-4 pt-6 text-muted">Artist not found.</div>;
 
   const isSelf = user?.uid === id;
 
   return (
-    <div className="p-4 flex flex-col gap-6">
+    <div className="p-4 pt-6 flex flex-col gap-6">
       <div className="flex items-center gap-4">
-        <img src={artist.photoURL} alt="" className="w-16 h-16 rounded-full" />
+        <img src={artist.photoURL} alt="" className="w-16 h-16 rounded-full ring-2 ring-wave-cyan/40" />
         <div>
-          <p className="text-lg font-semibold text-white">{artist.displayName}</p>
-          <p className="text-sm text-slate-400">{followerCount} followers · {tracks.length} tracks</p>
+          <p className="text-lg font-semibold text-ink">{artist.displayName}</p>
+          <p className="text-sm text-muted">{followerCount} followers · {tracks.length} tracks</p>
         </div>
       </div>
 
       {!isSelf && user && (
         <button
           onClick={handleFollow}
-          className={`rounded-full py-3 font-semibold ${following ? "border border-slate-700 text-white" : "bg-orange-400 text-black"}`}
+          className={`rounded-full py-3.5 font-semibold transition ${following ? "border border-line text-ink" : "bg-gradient-to-r from-wave-cyan to-wave-orange text-night"}`}
         >
           {following ? "Following" : "Follow"}
         </button>
       )}
 
       <div>
-        <h2 className="text-lg font-semibold text-white mb-3">Tracks</h2>
-        {tracks.length === 0 && <p className="text-slate-400">No tracks yet.</p>}
+        <h2 className="text-lg font-semibold text-ink mb-3">Tracks</h2>
+        {tracks.length === 0 && <p className="text-muted">No tracks yet.</p>}
         <div className="flex flex-col gap-2">
           {tracks.map((track) => <TrackCard key={track.id} track={track} />)}
         </div>

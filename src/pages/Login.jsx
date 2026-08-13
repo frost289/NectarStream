@@ -16,11 +16,16 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center gap-8 p-4 bg-slate-950">
-      <Logo className="h-32" />
+    <div className="min-h-screen flex flex-col items-center justify-center gap-10 p-6 bg-night relative overflow-hidden">
+      <div className="absolute -top-24 -left-24 w-72 h-72 bg-wave-cyan/20 rounded-full blur-3xl" />
+      <div className="absolute -bottom-24 -right-24 w-72 h-72 bg-wave-orange/20 rounded-full blur-3xl" />
+
+      <Logo className="h-32 relative z-10" />
+      <p className="text-muted text-sm relative z-10">Stream. Upload. Connect.</p>
+
       <button
         onClick={handleGoogleLogin}
-        className="bg-white text-black px-6 py-3 rounded-full font-medium"
+        className="relative z-10 bg-ink text-night px-8 py-3.5 rounded-full font-semibold shadow-lg active:scale-95 transition"
       >
         Continue with Google
       </button>

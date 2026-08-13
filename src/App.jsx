@@ -10,11 +10,12 @@ import Profile from "./pages/Profile";
 import Login from "./pages/Login";
 import Studio from "./pages/Studio";
 import ArtistProfile from "./pages/ArtistProfile";
+import Notifications from "./pages/Notifications";
 
 export default function App() {
   return (
     <BrowserRouter>
-      <div className="min-h-screen bg-slate-950 text-white pb-32">
+      <div className="min-h-screen bg-night text-ink pb-32">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/search" element={<Search />} />
@@ -22,6 +23,7 @@ export default function App() {
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           <Route path="/studio" element={<ProtectedRoute><Studio /></ProtectedRoute>} />
           <Route path="/artist/:id" element={<ArtistProfile />} />
+          <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
           <Route path="/login" element={<Login />} />
         </Routes>
         <MiniPlayer />

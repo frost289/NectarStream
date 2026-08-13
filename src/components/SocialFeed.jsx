@@ -30,21 +30,20 @@ export default function SocialFeed() {
   if (loading || activity.length === 0) return null;
 
   return (
-    <div className="mb-6">
-      <h2 className="text-lg font-semibold text-white mb-3">Social Pulse</h2>
-      <div className="flex flex-col gap-3">
+    <div className="mb-8">
+      <h2 className="text-lg font-semibold text-ink mb-3">Social Pulse</h2>
+      <div className="flex flex-col gap-1">
         {activity.map((item) => {
           const Icon = ICONS[item.type] || Heart;
           return (
-            <div key={item.id} className="flex items-center gap-3">
+            <div key={item.id} className="flex items-center gap-3 bg-panel rounded-xl p-3">
               <img src={item.actorPhoto} alt="" className="w-9 h-9 rounded-full flex-shrink-0" />
-              <p className="flex-1 min-w-0 text-sm text-slate-300 truncate">
-                <span className="font-medium text-white">{item.actorName}</span>{" "}
-                {VERB[item.type]}{" "}
-                <span className="text-orange-400">{item.targetTitle}</span>
+              <p className="flex-1 min-w-0 text-sm text-muted truncate">
+                <span className="font-medium text-ink">{item.actorName}</span> {VERB[item.type]}{" "}
+                <span className="text-wave-orange">{item.targetTitle}</span>
               </p>
-              <Icon size={16} className="text-slate-500 flex-shrink-0" />
-              <span className="text-xs text-slate-500 flex-shrink-0">{timeAgo(item.createdAt)}</span>
+              <Icon size={16} className="text-muted flex-shrink-0" />
+              <span className="text-xs text-muted flex-shrink-0">{timeAgo(item.createdAt)}</span>
             </div>
           );
         })}

@@ -1,6 +1,7 @@
 import { doc, setDoc, deleteDoc, getDoc, getDocs, collection, query, where, increment, updateDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "../firebase";
 import { logActivity } from "./activity";
+import { createNotification } from "./notifications";
 
 function likeId(userId, trackId) {
   return `${userId}_${trackId}`;
@@ -25,6 +26,7 @@ export async function toggleLike(user, track) {
     await setDoc(ref, { userId: user.uid, trackId: track.id, createdAt: serverTimestamp() });
     await updateDoc(trackRef, { likesCount: increment(1) });
     await logActivity({ type: "like", actor: user, targetId: track.id, targetTitle: track.title });
+    await createNotification(track.artistId, { type: "like", actor: user, targetId: track.id, targetTitle: track.title });
     return true;
   }
 }

@@ -1,1 +1,22 @@
 @import "tailwindcss";
+
+@theme {
+  --color-night: #0a0e1a;
+  --color-panel: #131a2e;
+  --color-panel-2: #1c2540;
+  --color-line: #232b45;
+  --color-ink: #f5f7fa;
+  --color-muted: #8a93a8;
+  --color-wave-cyan: #38bdf8;
+  --color-wave-orange: #fb923c;
+}
+
+body {
+  background-color: var(--color-night);
+  color: var(--color-ink);
+}
+
+@keyframes eq-bounce {
+  0%, 100% { transform: scaleY(0.35); }
+  50% { transform: scaleY(1); }
+}

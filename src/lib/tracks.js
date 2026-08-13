@@ -1,6 +1,8 @@
-import { collection, addDoc, query, where, orderBy, getDocs, doc, updateDoc, increment, serverTimestamp } from "firebase/firestore";
+import { collection, addDoc, query, where, orderBy, getDocs, doc, updateDoc, deleteDoc, increment, serverTimestamp } from "firebase/firestore";
 import { db } from "../firebase";
 import { logActivity } from "./activity";
+import { createNotification } from "./notifications";
+import { getFollowerIds } from "./follows";
 
 export async function createTrack({ title, genre, audioUrl, coverUrl, artist }) {
   const ref = await addDoc(collection(db, "tracks"), {
@@ -15,6 +17,10 @@ export async function createTrack({ title, genre, audioUrl, coverUrl, artist }) 
     createdAt: serverTimestamp(),
   });
   await logActivity({ type: "upload", actor: artist, targetId: ref.id, targetTitle: title });
+
+  const followerIds = await getFollowerIds(artist.uid);
+  await Promise.all(followerIds.map((fid) => createNotification(fid, { type: "upload", actor: artist, targetId: ref.id, targetTitle: title })));
+
   return ref;
 }
 
@@ -33,4 +39,12 @@ export async function getUserTracks(uid) {
 export async function incrementPlays(trackId) {
   const ref = doc(db, "tracks", trackId);
   await updateDoc(ref, { plays: increment(1) });
+}
+
+export async function updateTrack(trackId, { title, genre }) {
+  await updateDoc(doc(db, "tracks", trackId), { title, genre });
+}
+
+export async function deleteTrack(trackId) {
+  await deleteDoc(doc(db, "tracks", trackId));
 }

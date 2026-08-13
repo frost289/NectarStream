@@ -19,30 +19,23 @@ export default function Search() {
   }, []);
 
   const filtered = tracks.filter((track) => {
-    const matchesQuery =
-      query.trim() === "" ||
-      track.title?.toLowerCase().includes(query.toLowerCase()) ||
-      track.artistName?.toLowerCase().includes(query.toLowerCase());
-
-    const matchesGenre =
-      activeGenre === "All" ||
-      track.genre?.toLowerCase() === activeGenre.toLowerCase();
-
+    const matchesQuery = query.trim() === "" || track.title?.toLowerCase().includes(query.toLowerCase()) || track.artistName?.toLowerCase().includes(query.toLowerCase());
+    const matchesGenre = activeGenre === "All" || track.genre?.toLowerCase() === activeGenre.toLowerCase();
     return matchesQuery && matchesGenre;
   });
 
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold text-orange-400 mb-4">Search</h1>
+    <div className="p-4 pt-6">
+      <h1 className="text-3xl font-bold text-ink mb-5 tracking-tight">Search</h1>
 
       <div className="relative mb-4">
-        <SearchIcon size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+        <SearchIcon size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted" />
         <input
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Artists, songs, or genres"
-          className="w-full bg-slate-900 border border-slate-700 rounded-full py-3 pl-10 pr-4 text-white"
+          className="w-full bg-panel border border-line rounded-full py-3 pl-11 pr-4 text-ink placeholder:text-muted focus:outline-none focus:border-wave-cyan"
         />
       </div>
 
@@ -51,10 +44,8 @@ export default function Search() {
           <button
             key={genre}
             onClick={() => setActiveGenre(genre)}
-            className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium ${
-              activeGenre === genre
-                ? "bg-orange-400 text-black"
-                : "bg-slate-900 text-slate-300 border border-slate-700"
+            className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition ${
+              activeGenre === genre ? "bg-gradient-to-r from-wave-cyan to-wave-orange text-night" : "bg-panel text-muted border border-line"
             }`}
           >
             {genre}
@@ -62,15 +53,11 @@ export default function Search() {
         ))}
       </div>
 
-      {loading && <p className="text-slate-400">Loading tracks...</p>}
-      {!loading && filtered.length === 0 && (
-        <p className="text-slate-400">No tracks match your search.</p>
-      )}
+      {loading && <p className="text-muted">Loading tracks...</p>}
+      {!loading && filtered.length === 0 && <p className="text-muted">No tracks match your search.</p>}
 
       <div className="flex flex-col gap-2">
-        {filtered.map((track) => (
-          <TrackCard key={track.id} track={track} />
-        ))}
+        {filtered.map((track) => <TrackCard key={track.id} track={track} />)}
       </div>
     </div>
   );
