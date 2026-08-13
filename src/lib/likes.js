@@ -1,5 +1,6 @@
 import { doc, setDoc, deleteDoc, getDoc, getDocs, collection, query, where, increment, updateDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "../firebase";
+import { logActivity } from "./activity";
 
 function likeId(userId, trackId) {
   return `${userId}_${trackId}`;
@@ -11,8 +12,8 @@ export async function isTrackLiked(userId, trackId) {
   return snap.exists();
 }
 
-export async function toggleLike(userId, track) {
-  const ref = doc(db, "likes", likeId(userId, track.id));
+export async function toggleLike(user, track) {
+  const ref = doc(db, "likes", likeId(user.uid, track.id));
   const snap = await getDoc(ref);
   const trackRef = doc(db, "tracks", track.id);
 
@@ -21,8 +22,9 @@ export async function toggleLike(userId, track) {
     await updateDoc(trackRef, { likesCount: increment(-1) });
     return false;
   } else {
-    await setDoc(ref, { userId, trackId: track.id, createdAt: serverTimestamp() });
+    await setDoc(ref, { userId: user.uid, trackId: track.id, createdAt: serverTimestamp() });
     await updateDoc(trackRef, { likesCount: increment(1) });
+    await logActivity({ type: "like", actor: user, targetId: track.id, targetTitle: track.title });
     return true;
   }
 }

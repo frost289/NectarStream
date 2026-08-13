@@ -9,6 +9,7 @@ import Library from "./pages/Library";
 import Profile from "./pages/Profile";
 import Login from "./pages/Login";
 import Studio from "./pages/Studio";
+import ArtistProfile from "./pages/ArtistProfile";
 
 export default function App() {
   return (
@@ -20,6 +21,7 @@ export default function App() {
           <Route path="/library" element={<ProtectedRoute><Library /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           <Route path="/studio" element={<ProtectedRoute><Studio /></ProtectedRoute>} />
+          <Route path="/artist/:id" element={<ArtistProfile />} />
           <Route path="/login" element={<Login />} />
         </Routes>
         <MiniPlayer />

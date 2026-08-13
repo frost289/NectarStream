@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { ChevronDown, Play, Pause, SkipBack, SkipForward, Shuffle, Repeat, Share2, Download, Heart } from "lucide-react";
+import { ChevronDown, Play, Pause, SkipBack, SkipForward, Shuffle, Repeat, Share2, Download, Heart, MessageCircle } from "lucide-react";
 import { usePlayer } from "../context/PlayerContext";
 import { useAuth } from "../context/AuthContext";
 import { isTrackLiked, toggleLike } from "../lib/likes";
+import CommentSheet from "./CommentSheet";
 
 function formatTime(seconds) {
   if (!seconds || isNaN(seconds)) return "0:00";
@@ -15,6 +16,7 @@ export default function NowPlaying() {
   const { currentTrack, isPlaying, isExpanded, setIsExpanded, progress, duration, togglePlay, seekTo } = usePlayer();
   const { user } = useAuth();
   const [liked, setLiked] = useState(false);
+  const [showComments, setShowComments] = useState(false);
 
   useEffect(() => {
     if (user && currentTrack) isTrackLiked(user.uid, currentTrack.id).then(setLiked);
@@ -22,14 +24,11 @@ export default function NowPlaying() {
 
   if (!isExpanded || !currentTrack) return null;
 
-  const handleSeek = (e) => {
-    const newTime = (e.target.value / 100) * duration;
-    seekTo(newTime);
-  };
+  const handleSeek = (e) => seekTo((e.target.value / 100) * duration);
 
   const handleLike = async () => {
     if (!user) return;
-    const nowLiked = await toggleLike(user.uid, currentTrack);
+    const nowLiked = await toggleLike(user, currentTrack);
     setLiked(nowLiked);
   };
 
@@ -52,9 +51,7 @@ export default function NowPlaying() {
   return (
     <div className="fixed inset-0 bg-slate-950 z-50 flex flex-col p-4 overflow-y-auto">
       <div className="flex items-center justify-between mb-8">
-        <button onClick={() => setIsExpanded(false)}>
-          <ChevronDown size={28} className="text-white" />
-        </button>
+        <button onClick={() => setIsExpanded(false)}><ChevronDown size={28} className="text-white" /></button>
         <span className="text-sm text-slate-400 uppercase tracking-wide">Now Playing</span>
         <div className="w-7" />
       </div>
@@ -66,21 +63,19 @@ export default function NowPlaying() {
           <h2 className="text-2xl font-bold text-white">{currentTrack.title}</h2>
           <p className="text-slate-400">{currentTrack.artistName}</p>
         </div>
-        {user && (
-          <button onClick={handleLike}>
-            <Heart size={24} className={liked ? "fill-orange-400 text-orange-400" : "text-slate-400"} />
+        <div className="flex items-center gap-4">
+          {user && (
+            <button onClick={handleLike}>
+              <Heart size={24} className={liked ? "fill-orange-400 text-orange-400" : "text-slate-400"} />
+            </button>
+          )}
+          <button onClick={() => setShowComments(true)}>
+            <MessageCircle size={24} className="text-slate-400" />
           </button>
-        )}
+        </div>
       </div>
 
-      <input
-        type="range"
-        min="0"
-        max="100"
-        value={duration ? (progress / duration) * 100 : 0}
-        onChange={handleSeek}
-        className="w-full accent-orange-400 mb-1"
-      />
+      <input type="range" min="0" max="100" value={duration ? (progress / duration) * 100 : 0} onChange={handleSeek} className="w-full accent-orange-400 mb-1" />
       <div className="flex justify-between text-sm text-slate-400 mb-8">
         <span>{formatTime(progress)}</span>
         <span>{formatTime(duration)}</span>
@@ -98,14 +93,14 @@ export default function NowPlaying() {
 
       <div className="flex justify-center gap-12">
         <button onClick={handleShare} className="flex flex-col items-center gap-1 text-slate-400">
-          <Share2 size={20} />
-          <span className="text-xs">Share</span>
+          <Share2 size={20} /><span className="text-xs">Share</span>
         </button>
         <button onClick={handleDownload} className="flex flex-col items-center gap-1 text-slate-400">
-          <Download size={20} />
-          <span className="text-xs">Download</span>
+          <Download size={20} /><span className="text-xs">Download</span>
         </button>
       </div>
+
+      {showComments && <CommentSheet track={currentTrack} onClose={() => setShowComments(false)} />}
     </div>
   );
 }

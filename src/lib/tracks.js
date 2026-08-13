@@ -1,8 +1,9 @@
 import { collection, addDoc, query, where, orderBy, getDocs, doc, updateDoc, increment, serverTimestamp } from "firebase/firestore";
 import { db } from "../firebase";
+import { logActivity } from "./activity";
 
 export async function createTrack({ title, genre, audioUrl, coverUrl, artist }) {
-  return addDoc(collection(db, "tracks"), {
+  const ref = await addDoc(collection(db, "tracks"), {
     title,
     genre,
     audioUrl,
@@ -13,6 +14,8 @@ export async function createTrack({ title, genre, audioUrl, coverUrl, artist }) 
     likesCount: 0,
     createdAt: serverTimestamp(),
   });
+  await logActivity({ type: "upload", actor: artist, targetId: ref.id, targetTitle: title });
+  return ref;
 }
 
 export async function getAllTracks() {
