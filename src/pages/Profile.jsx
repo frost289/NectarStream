@@ -8,6 +8,8 @@ import { auth } from "../firebase";
 import { getUserById } from "../lib/users";
 import EditTrackSheet from "../components/EditTrackSheet";
 import EditProfileSheet from "../components/EditProfileSheet";
+import TrackStats from "../components/TrackStats";
+
 
 export default function Profile() {
   const { user } = useAuth();
@@ -71,7 +73,7 @@ export default function Profile() {
               <img src={track.coverUrl} alt="" className="w-12 h-12 rounded-lg object-cover" />
               <div className="flex-1 min-w-0">
                 <p className="truncate font-medium text-ink">{track.title}</p>
-                <p className="text-xs text-muted">{track.plays || 0} streams</p>
+                <TrackStats track={track} className="mt-0.5" />
               </div>
               <span className="text-xs border border-wave-cyan/40 text-wave-cyan rounded-full px-2 py-1">LIVE</span>
               <button onClick={() => setEditingTrack(track)} className="text-muted"><Pencil size={16} /></button>

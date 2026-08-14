@@ -1,4 +1,4 @@
-import { collection, addDoc, query, where, orderBy, getDocs, serverTimestamp } from "firebase/firestore";
+import { collection, addDoc, doc, updateDoc, increment, query, where, orderBy, getDocs, serverTimestamp } from "firebase/firestore";
 import { db } from "../firebase";
 import { logActivity } from "./activity";
 import { createNotification } from "./notifications";
@@ -12,6 +12,7 @@ export async function addComment(track, user, text) {
     text,
     createdAt: serverTimestamp(),
   });
+  await updateDoc(doc(db, "tracks", track.id), { commentsCount: increment(1) });
   await logActivity({ type: "comment", actor: user, targetId: track.id, targetTitle: track.title });
   await createNotification(track.artistId, { type: "comment", actor: user, targetId: track.id, targetTitle: track.title });
 }

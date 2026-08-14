@@ -6,6 +6,7 @@ import { isTrackLiked, toggleLike } from "../lib/likes";
 import { isFollowing, toggleFollow } from "../lib/follows";
 import CommentSheet from "./CommentSheet";
 import QueueSheet from "./QueueSheet";
+import TrackStats from "./TrackStats";
 
 function formatTime(seconds) {
   if (!seconds || isNaN(seconds)) return "0:00";
@@ -70,6 +71,7 @@ export default function NowPlaying() {
         <div className="min-w-0">
           <h2 className="text-2xl font-bold text-ink truncate">{currentTrack.title}</h2>
           <p className="text-muted truncate">{currentTrack.artistName}</p>
+          <TrackStats track={currentTrack} className="mt-1" />
         </div>
         <div className="flex items-center gap-4 flex-shrink-0 pl-4">
           {user && <button onClick={handleLike}><Heart size={24} className={liked ? "fill-wave-orange text-wave-orange" : "text-muted"} /></button>}
