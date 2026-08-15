@@ -11,15 +11,18 @@ export async function updateUserProfile(uid, { displayName, bio, photoURL }) {
   if (photoURL) updates.photoURL = photoURL;
   await updateDoc(doc(db, "users", uid), updates);
 
-  // Cascade the new name to every track this user has already uploaded,
-  // since each track stores its own copy of artistName for fast loading.
   const q = query(collection(db, "tracks"), where("artistId", "==", uid));
   const snap = await getDocs(q);
   if (!snap.empty) {
     const batch = writeBatch(db);
-    snap.docs.forEach((trackDoc) => {
-      batch.update(trackDoc.ref, { artistName: displayName });
-    });
+    snap.docs.forEach((trackDoc) => batch.update(trackDoc.ref, { artistName: displayName }));
     await batch.commit();
   }
+}
+
+export async function registerAsArtist(uid, { artistName, bio }) {
+  const updates = { role: "artist" };
+  if (artistName) updates.displayName = artistName;
+  if (bio !== undefined) updates.bio = bio;
+  await updateDoc(doc(db, "users", uid), updates);
 }

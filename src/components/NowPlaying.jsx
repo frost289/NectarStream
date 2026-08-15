@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
-import { ChevronDown, Play, Pause, SkipBack, SkipForward, Shuffle, Repeat, Repeat1, Share2, Download, Heart, MessageCircle, ListMusic } from "lucide-react";
+import { ChevronDown, Play, Pause, SkipBack, SkipForward, Shuffle, Repeat, Repeat1, Share2, Download, Heart, MessageCircle, ListMusic, ListPlus } from "lucide-react";
 import { usePlayer } from "../context/PlayerContext";
 import { useAuth } from "../context/AuthContext";
 import { isTrackLiked, toggleLike } from "../lib/likes";
 import { isFollowing, toggleFollow } from "../lib/follows";
 import CommentSheet from "./CommentSheet";
 import QueueSheet from "./QueueSheet";
+import AddToPlaylistSheet from "./AddToPlaylistSheet";
 import TrackStats from "./TrackStats";
 
 function formatTime(seconds) {
@@ -22,6 +23,7 @@ export default function NowPlaying() {
   const [followingArtist, setFollowingArtist] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [showQueue, setShowQueue] = useState(false);
+  const [showAddToPlaylist, setShowAddToPlaylist] = useState(false);
 
   useEffect(() => {
     if (user && currentTrack) {
@@ -74,6 +76,7 @@ export default function NowPlaying() {
           <TrackStats track={currentTrack} className="mt-1" />
         </div>
         <div className="flex items-center gap-4 flex-shrink-0 pl-4">
+          {user && <button onClick={() => setShowAddToPlaylist(true)}><ListPlus size={24} className="text-muted" /></button>}
           {user && <button onClick={handleLike}><Heart size={24} className={liked ? "fill-wave-orange text-wave-orange" : "text-muted"} /></button>}
           <button onClick={() => setShowComments(true)}><MessageCircle size={24} className="text-muted" /></button>
         </div>
@@ -113,6 +116,7 @@ export default function NowPlaying() {
 
       {showComments && <CommentSheet track={currentTrack} onClose={() => setShowComments(false)} />}
       {showQueue && <QueueSheet onClose={() => setShowQueue(false)} />}
+      {showAddToPlaylist && <AddToPlaylistSheet track={currentTrack} onClose={() => setShowAddToPlaylist(false)} />}
     </div>
   );
 }

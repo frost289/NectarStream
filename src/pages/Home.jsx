@@ -7,14 +7,17 @@ import { getNotifications } from "../lib/notifications";
 import { useAuth } from "../context/AuthContext";
 import TrackCard from "../components/TrackCard";
 import TrackTile from "../components/TrackTile";
+import SuggestedArtists from "../components/SuggestedArtists";
 import Logo from "../components/Logo";
 import { usePlayer } from "../context/PlayerContext";
 
 function getGreeting() {
   const hour = new Date().getHours();
+  if (hour < 5) return "Good night";
   if (hour < 12) return "Good morning";
-  if (hour < 18) return "Good afternoon";
-  return "Good evening";
+  if (hour < 17) return "Good afternoon";
+  if (hour < 21) return "Good evening";
+  return "Good night";
 }
 
 export default function Home() {
@@ -52,6 +55,8 @@ export default function Home() {
 
       {loading && <p className="text-muted">Loading tracks...</p>}
       {!loading && tracks.length === 0 && <p className="text-muted">No tracks yet — be the first to upload one.</p>}
+
+      {user && <SuggestedArtists />}
 
       {recent.length > 0 && (
         <div className="mb-8">
