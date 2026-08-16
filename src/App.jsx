@@ -4,6 +4,7 @@ import MiniPlayer from "./components/MiniPlayer";
 import NowPlaying from "./components/NowPlaying";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ArtistRoute from "./components/ArtistRoute";
+import AdminRoute from "./components/AdminRoute";
 import AmbientBackground from "./components/AmbientBackground";
 import Home from "./pages/Home";
 import Search from "./pages/Search";
@@ -15,6 +16,8 @@ import ArtistProfile from "./pages/ArtistProfile";
 import Notifications from "./pages/Notifications";
 import BecomeArtist from "./pages/BecomeArtist";
 import PlaylistDetail from "./pages/PlaylistDetail";
+import AdminDashboard from "./pages/AdminDashboard";
+import TrackShare from "./pages/TrackShare";
 
 export default function App() {
   return (
@@ -32,6 +35,8 @@ export default function App() {
             <Route path="/artist/:id" element={<ArtistProfile />} />
             <Route path="/playlist/:id" element={<ProtectedRoute><PlaylistDetail /></ProtectedRoute>} />
             <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
+            <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+            <Route path="/track/:id" element={<TrackShare />} />
             <Route path="/login" element={<Login />} />
           </Routes>
         </div>

@@ -1,20 +1,27 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { signOut } from "firebase/auth";
-import { Pencil, UserCog } from "lucide-react";
+import { Pencil, UserCog, ShieldCheck } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
-import { useTracks } from "../context/TracksContext";
 import { auth } from "../firebase";
 import { getUserById } from "../lib/users";
+import { subscribeToUserTracks } from "../lib/tracks";
 import EditTrackSheet from "../components/EditTrackSheet";
 import EditProfileSheet from "../components/EditProfileSheet";
 import TrackStats from "../components/TrackStats";
 
+const STATUS_LABEL = {
+  pending: { text: "Pending Review", cls: "border-yellow-600/50 text-yellow-400" },
+  approved: { text: "Live", cls: "border-wave-cyan/40 text-wave-cyan" },
+  rejected: { text: "Not Approved", cls: "border-red-800 text-red-400" },
+};
+
 export default function Profile() {
   const { user } = useAuth();
-  const { tracks: allTracks, loading } = useTracks();
   const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
+  const [tracks, setTracks] = useState([]);
+  const [tracksLoading, setTracksLoading] = useState(true);
   const [editingTrack, setEditingTrack] = useState(null);
   const [editingProfile, setEditingProfile] = useState(false);
 
@@ -25,7 +32,15 @@ export default function Profile() {
 
   useEffect(loadProfile, [user]);
 
-  const tracks = allTracks.filter((t) => t.artistId === user?.uid);
+  useEffect(() => {
+    if (!user) return;
+    const unsubscribe = subscribeToUserTracks(user.uid, (data) => {
+      setTracks(data);
+      setTracksLoading(false);
+    });
+    return unsubscribe;
+  }, [user]);
+
   const totalStreams = tracks.reduce((sum, t) => sum + (t.plays || 0), 0);
 
   const handleLogout = async () => {
@@ -52,8 +67,14 @@ export default function Profile() {
         <button onClick={() => setEditingProfile(true)} className="text-muted"><UserCog size={20} /></button>
       </div>
 
+      {profile.isAdmin && (
+        <button onClick={() => navigate("/admin")} className="flex items-center justify-center gap-2 border border-wave-cyan/40 text-wave-cyan rounded-full py-3 font-medium">
+          <ShieldCheck size={18} /> Admin Dashboard
+        </button>
+      )}
+
       <div className="bg-panel border border-line rounded-xl p-4 text-sm text-muted">
-        Royalty payments are currently processed manually. Contact the StreetWave admin to confirm your payout details.
+        Royalty payments are currently processed manually. Contact the StreetWave admin to complete approval and payment for new uploads.
       </div>
 
       {isArtist && (
@@ -71,19 +92,28 @@ export default function Profile() {
 
           <div>
             <h2 className="text-lg font-semibold text-ink mb-3">Your Songs</h2>
-            {loading && <p className="text-muted">Loading...</p>}
-            {!loading && tracks.length === 0 && <p className="text-muted">You haven't uploaded any tracks yet.</p>}
+            {tracksLoading && <p className="text-muted">Loading...</p>}
+            {!tracksLoading && tracks.length === 0 && <p className="text-muted">You haven't uploaded any tracks yet.</p>}
             <div className="flex flex-col gap-2">
-              {tracks.map((track) => (
-                <div key={track.id} className="flex items-center gap-3 bg-panel rounded-xl p-3 border border-line">
-                  <img src={track.coverUrl} alt="" className="w-12 h-12 rounded-lg object-cover" />
-                  <div className="flex-1 min-w-0">
-                    <p className="truncate font-medium text-ink">{track.title}</p>
-                    <TrackStats track={track} className="mt-0.5" />
+              {tracks.map((track) => {
+                const statusInfo = STATUS_LABEL[track.status] || STATUS_LABEL.approved;
+                return (
+                  <div key={track.id} className="flex items-center gap-3 bg-panel rounded-xl p-3 border border-line">
+                    <img src={track.coverUrl} alt="" className="w-12 h-12 rounded-lg object-cover" />
+                    <div className="flex-1 min-w-0">
+                      <p className="truncate font-medium text-ink">{track.title}</p>
+                      <TrackStats track={track} className="mt-0.5" />
+                    </div>
+                    <div className="flex flex-col items-end gap-1">
+                      <span className={`text-[10px] border rounded-full px-2 py-0.5 ${statusInfo.cls}`}>{statusInfo.text}</span>
+                      {track.status === "approved" && track.tier === "premium" && (
+                        <span className="text-[10px] bg-gradient-to-r from-wave-cyan to-wave-orange text-night font-bold rounded-full px-2 py-0.5">PREMIUM</span>
+                      )}
+                    </div>
+                    <button onClick={() => setEditingTrack(track)} className="text-muted"><Pencil size={16} /></button>
                   </div>
-                  <button onClick={() => setEditingTrack(track)} className="text-muted"><Pencil size={16} /></button>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </>

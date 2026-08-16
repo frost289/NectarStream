@@ -1,11 +1,18 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Heart, MessageCircle, UserPlus, Upload, ChevronLeft } from "lucide-react";
+import { Heart, MessageCircle, UserPlus, Upload, CheckCircle2, XCircle, ChevronLeft } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { getNotifications, markAllRead } from "../lib/notifications";
 
-const ICONS = { like: Heart, comment: MessageCircle, follow: UserPlus, upload: Upload };
-const VERB = { like: "liked your track", comment: "commented on your track", follow: "followed you", upload: "uploaded a new track" };
+const ICONS = { like: Heart, comment: MessageCircle, follow: UserPlus, upload: Upload, approved: CheckCircle2, rejected: XCircle };
+const VERB = {
+  like: "liked your track",
+  comment: "commented on your track",
+  follow: "followed you",
+  upload: "uploaded a new track",
+  approved: "approved your track",
+  rejected: "didn't approve your track",
+};
 
 function timeAgo(timestamp) {
   if (!timestamp?.toDate) return "";

@@ -26,7 +26,10 @@ export default function TrackCard({ track, queue }) {
     <div onClick={() => playTrack(track, queue)} className={`flex items-center gap-3 rounded-xl p-2.5 cursor-pointer border transition ${isActive ? "bg-panel-2 border-wave-orange/30" : "bg-panel border-transparent active:bg-panel-2"}`}>
       <img src={track.coverUrl} alt="" className="w-12 h-12 rounded-lg object-cover" />
       <div className="flex-1 min-w-0">
-        <p className={`truncate font-medium ${isActive ? "text-wave-orange" : "text-ink"}`}>{track.title}</p>
+        <div className="flex items-center gap-1.5">
+          <p className={`truncate font-medium ${isActive ? "text-wave-orange" : "text-ink"}`}>{track.title}</p>
+          {track.tier === "premium" && <span className="flex-shrink-0 text-[9px] font-bold bg-gradient-to-r from-wave-cyan to-wave-orange text-night rounded px-1.5 py-0.5">PREMIUM</span>}
+        </div>
         <Link to={`/artist/${track.artistId}`} onClick={(e) => e.stopPropagation()} className="truncate text-sm text-muted block hover:text-wave-cyan">{track.artistName}</Link>
         <TrackStats track={track} className="mt-0.5" />
       </div>

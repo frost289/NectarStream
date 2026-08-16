@@ -24,7 +24,7 @@ export default function EditTrackSheet({ track, onClose, onSaved, onDeleted }) {
 
   return (
     <div className="fixed inset-0 bg-night/70 z-[60] flex items-end" onClick={onClose}>
-      <div onClick={(e) => e.stopPropagation()} className="bg-panel w-full rounded-t-2xl flex flex-col border-t border-line p-4 gap-4">
+      <div onClick={(e) => e.stopPropagation()} className="bg-panel w-full max-h-[85vh] rounded-t-2xl flex flex-col border-t border-line p-4 gap-4 overflow-y-auto pb-32">
         <div className="flex items-center justify-between">
           <h3 className="font-semibold text-ink">Edit Track</h3>
           <button onClick={onClose}><X size={22} className="text-muted" /></button>

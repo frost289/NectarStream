@@ -33,7 +33,7 @@ export default function Studio() {
       setStatus("saving");
       await createTrack({ title, genre, audioUrl, coverUrl, artist: user });
       setStatus("success");
-      setTimeout(() => navigate("/profile"), 1200);
+      setTimeout(() => navigate("/profile"), 1800);
     } catch (err) {
       setError(err.message);
       setStatus("error");
@@ -44,12 +44,15 @@ export default function Studio() {
     "uploading-cover": "Uploading cover image...",
     "uploading-audio": "Uploading audio file...",
     saving: "Saving track details...",
-    success: "Track uploaded successfully!",
+    success: "Submitted! Your track is pending admin review.",
   }[status];
 
   return (
     <div className="p-4 pt-6">
-      <h1 className="text-3xl font-bold text-ink mb-6 tracking-tight">Upload a Track</h1>
+      <h1 className="text-3xl font-bold text-ink mb-2 tracking-tight">Upload a Track</h1>
+      <p className="text-sm text-muted mb-6">
+        New uploads are reviewed by a StreetWave admin before going live. Contact the admin to arrange payment and approval — you'll be notified once it's live.
+      </p>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <input type="text" placeholder="Track title" value={title} onChange={(e) => setTitle(e.target.value)} disabled={isBusy}
           className="bg-panel border border-line rounded-xl p-3 text-ink placeholder:text-muted disabled:opacity-50 focus:outline-none focus:border-wave-cyan" />
@@ -82,7 +85,7 @@ export default function Studio() {
 
         <button type="submit" disabled={isBusy}
           className="bg-gradient-to-r from-wave-cyan to-wave-orange text-night font-semibold rounded-full py-3.5 shadow-lg disabled:opacity-50 active:scale-[0.98] transition">
-          {isBusy ? "Uploading..." : "Upload Track"}
+          {isBusy ? "Uploading..." : "Submit for Review"}
         </button>
       </form>
     </div>

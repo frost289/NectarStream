@@ -34,8 +34,10 @@ export default function Home() {
     getNotifications(user.uid).then((data) => setUnreadCount(data.filter((n) => !n.read).length));
   }, [user]);
 
+  const featured = tracks.filter((t) => t.tier === "premium").slice(0, 8);
   const newReleases = tracks.slice(0, 8);
   const popular = [...tracks].sort((a, b) => (b.plays || 0) - (a.plays || 0)).slice(0, 8);
+  const allSorted = [...tracks].sort((a, b) => (b.tier === "premium") - (a.tier === "premium"));
 
   return (
     <div className="p-4 pt-6">
@@ -55,6 +57,15 @@ export default function Home() {
 
       {loading && <p className="text-muted">Loading tracks...</p>}
       {!loading && tracks.length === 0 && <p className="text-muted">No tracks yet — be the first to upload one.</p>}
+
+      {featured.length > 0 && (
+        <div className="mb-8">
+          <h2 className="text-lg font-semibold text-ink mb-3">Featured</h2>
+          <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4">
+            {featured.map((track) => <TrackTile key={track.id} track={track} onClick={() => playTrack(track, featured)} />)}
+          </div>
+        </div>
+      )}
 
       {user && <SuggestedArtists />}
 
@@ -89,7 +100,7 @@ export default function Home() {
         <>
           <h2 className="text-lg font-semibold text-ink mb-3">All Tracks</h2>
           <div className="flex flex-col gap-2">
-            {tracks.map((track) => <TrackCard key={track.id} track={track} queue={tracks} />)}
+            {allSorted.map((track) => <TrackCard key={track.id} track={track} queue={allSorted} />)}
           </div>
         </>
       )}

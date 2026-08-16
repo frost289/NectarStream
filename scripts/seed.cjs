@@ -43,6 +43,8 @@ async function seed(count = 20) {
       likesCount: 0,
       isSeed: true,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      status: "approved",
+      tier: "standard",
     });
 
     console.log(`Seeded: ${title} — ${artistName}`);

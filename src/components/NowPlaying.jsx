@@ -41,17 +41,29 @@ export default function NowPlaying() {
     if (!user) return;
     setFollowingArtist(await toggleFollow(user, currentTrack.artistId, currentTrack.artistName));
   };
-  const handleDownload = () => {
-    const link = document.createElement("a");
-    link.href = currentTrack.audioUrl;
-    link.download = `${currentTrack.title}.mp3`;
-    link.click();
+  const handleDownload = async () => {
+    try {
+      const res = await fetch(currentTrack.audioUrl);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const safeName = `${currentTrack.artistName} - ${currentTrack.title}`.replace(/[^a-z0-9 \-]/gi, "").trim();
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${safeName}.mp3`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch {
+      window.open(currentTrack.audioUrl, "_blank");
+    }
   };
   const handleShare = async () => {
+    const shareUrl = `${window.location.origin}/track/${currentTrack.id}`;
     if (navigator.share) {
-      await navigator.share({ title: currentTrack.title, text: `Listen to ${currentTrack.title} on StreetWave`, url: window.location.href });
+      await navigator.share({ title: currentTrack.title, text: `Listen to "${currentTrack.title}" by ${currentTrack.artistName} on StreetWave`, url: shareUrl });
     } else {
-      await navigator.clipboard.writeText(window.location.href);
+      await navigator.clipboard.writeText(shareUrl);
       alert("Link copied to clipboard");
     }
   };
